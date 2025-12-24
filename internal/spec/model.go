@@ -4,6 +4,13 @@ type Spec struct {
 	Path     string
 	Title    string
 	Sections map[string]string
+	Content  string
+	Links    []SpecLink
+}
+
+type SpecLink struct {
+	Title string
+	Path  string
 }
 
 type Graph struct {
@@ -20,4 +27,9 @@ type Node struct {
 type Edge struct {
 	From string
 	To   string
+}
+
+type ExportTree struct {
+	Specs    map[string]*Spec
+	RootSpecs []string
 }

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreateUserUseCase - Спецификации</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            margin-bottom: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        header .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            font-size: 0.95em;
+            transition: color 0.2s;
+        }
+        header .back-link:hover {
+            color: white;
+        }
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        .content {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .content h1 { font-size: 2em; margin-top: 30px; margin-bottom: 20px; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .content h1:first-child { margin-top: 0; }
+        .content h2 { font-size: 1.5em; margin-top: 25px; margin-bottom: 15px; color: #555; }
+        .content h3 { font-size: 1.2em; margin-top: 20px; margin-bottom: 12px; color: #666; }
+        .content p { margin-bottom: 15px; }
+        .content ul, .content ol { margin-left: 30px; margin-bottom: 15px; }
+        .content li { margin-bottom: 8px; }
+        .content code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.95em; color: #d73a49; }
+        .content pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; margin-bottom: 15px; }
+        .content pre code { color: #333; padding: 0; background: none; }
+        .content blockquote { border-left: 4px solid #667eea; padding-left: 15px; margin-left: 0; margin-bottom: 15px; color: #666; font-style: italic; }
+        .content table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .content table th, .content table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .content table th { background: #f9f9f9; font-weight: 600; }
+        .navigation {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .navigation h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .navigation ul {
+            list-style: none;
+            margin-left: 0;
+        }
+        .navigation li {
+            margin-bottom: 10px;
+        }
+        .navigation a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 12px;
+            display: inline-block;
+            border-radius: 4px;
+            transition: all 0.2s;
+            border: 1px solid #667eea;
+        }
+        .navigation a:hover {
+            background: #667eea;
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 20px 15px; }
+            header h1 { font-size: 1.5em; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <a href="index.html" class="back-link">← Вернуться к спецификациям</a>
+            <h1>CreateUserUseCase</h1>
+        </div>
+    </header>
+    <div class="container">
+        <div class="content">
+            <h1>CreateUserUseCase</h1>
+
+<h2>Responsibility</h2>
+<p>Реализует бизнес-процесс создания нового пользователя со всеми необходимыми проверками и инициализацией.</p>
+
+<h2>Inputs</h2>
+<ul>
+<li>Email пользователя</li>
+<li>Пароль</li>
+<li>Имя пользователя</li>
+</ul>
+
+<h2>Outputs</h2>
+<ul>
+<li>Созданный объект User с ID</li>
+<li>Статус успешного создания</li>
+</ul>
+
+<h2>Business Rules</h2>
+<p>1. Email должен быть уникальным</p>
+<p>2. Пароль должен быть минимум 8 символов</p>
+<p>3. Новый пользователь создается в неактивном состоянии</p>
+<p>4. Отправляется email с ссылкой подтверждения</p>
+<p>5. Максимум 10 попыток регистрации за час с одного IP</p>
+
+<h2>Flow</h2>
+<p>1. Валидирует входные данные</p>
+<p>→ calls: ../services/validation_service.md#ValidateEmail</p>
+<p>2. Проверяет уникальность email</p>
+<p>→ reads: ../repositories/user_repository.md#ExistsByEmail</p>
+<p>3. Хеширует пароль</p>
+<p>→ calls: ../services/crypto_service.md#HashPassword</p>
+<p>4. Создает запись в репозитории</p>
+<p>→ writes: ../repositories/user_repository.md#Create</p>
+<p>5. Отправляет письмо подтверждения</p>
+<p>→ calls: ../services/email_service.md#SendConfirmation</p>
+<p>6. Возвращает созданного пользователя</p>
+
+<h2>Dependencies</h2>
+<ul>
+<li>[UserRepository](../repositories/user_repository.md)</li>
+<li>[ValidationService](../services/validation_service.md)</li>
+<li>[CryptoService](../services/crypto_service.md)</li>
+<li>[EmailService](../services/email_service.md)</li>
+</ul>
+
+<h2>Errors</h2>
+<ul>
+<li>ErrEmailExists — email уже зарегистрирован</li>
+<li>ErrInvalidEmail — некорректный формат email</li>
+<li>ErrWeakPassword — пароль не соответствует требованиям</li>
+<li>ErrRateLimitExceeded — превышен лимит попыток регистрации</li>
+</ul>
+
+<h2>Notes</h2>
+<p>Usecase координирует работу различных сервисов для реализации бизнес-процесса.</p>
+<p>Все проверки выполняются до создания пользователя в БД.</p>
+
+
+        <div class="navigation">
+            <h3>Связанные спецификации</h3>
+            <ul>
+        <li><a href="user_repository.md.html">UserRepository</a></li>
+        <li><a href="validation_service.md.html">ValidationService</a></li>
+        <li><a href="crypto_service.md.html">CryptoService</a></li>
+        <li><a href="email_service.md.html">EmailService</a></li>
+
+            </ul>
+        </div>
+
+        </div>
+    </div>
+</body>
+</html>

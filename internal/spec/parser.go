@@ -13,14 +13,18 @@ func ParseFile(path string) (*Spec, error) {
 		return nil, err
 	}
 
-	lines := strings.Split(string(data), "\n")
+	content := string(data)
+	lines := strings.Split(content, "\n")
 
 	spec := &Spec{
 		Path:     path,
+		Content:  content,
 		Sections: map[string]string{},
+		Links:    []SpecLink{},
 	}
 
 	var current string
+	re := regexp.MustCompile(`\[([^\]]+)\]\(([^)]+\.md)\)`)
 
 	for _, line := range lines {
 		if strings.HasPrefix(line, "## ") {
@@ -33,6 +37,14 @@ func ParseFile(path string) (*Spec, error) {
 		}
 		if current != "" {
 			spec.Sections[current] += line + "\n"
+		}
+		
+		matches := re.FindAllStringSubmatch(line, -1)
+		for _, match := range matches {
+			spec.Links = append(spec.Links, SpecLink{
+				Title: match[1],
+				Path:  match[2],
+			})
 		}
 	}
 
