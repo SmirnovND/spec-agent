@@ -61,25 +61,22 @@ func createZenflowWorkflow() error {
 ## Workflow Steps
 
 ### [ ] Step: Planning
-1. Зафиксируй контекст, цель и ограничения задачи.
-2. Составь план в {@artifacts_path}/plan.md.
-3. Добавь ссылки на правила:
-   - .spec_agent/prompts/spec_rules.md
-   - .spec_agent/prompts/workflow.md
-   - .spec_agent/prompts/agent_prompt.md
+1. Обязательно прочитай: .spec_agent/prompts/zenflow/planning.md.
+2. Зафиксируй контекст, цель и ограничения задачи.
+3. Составь план в {@artifacts_path}/plan.md.
 Acceptance criteria:
 - В plan.md описаны scope, затронутые компоненты и этапы.
 
 ### [ ] Step: Technical Specification
-1. Подготовь/обнови спецификацию в {@artifacts_path}/spec.md.
-2. Опиши Business Logic, Flow, Links и Dependencies.
-3. Проверь соответствие правилам из .spec_agent/prompts/spec_rules.md.
+1. Обязательно прочитай: .spec_agent/prompts/zenflow/technical_specification.md.
+2. Подготовь/обнови спецификацию в {@artifacts_path}/spec.md.
+3. Опиши Business Logic, Flow, Links и Dependencies.
 Acceptance criteria:
 - spec.md содержит полный сценарий изменений и ссылки на связанные спеки.
 
 ### [ ] Step: Specification Review
-1. Проверь spec.md на полноту, непротиворечивость и трассируемость к задаче.
-2. Проверь ссылки, зависимости и соответствие правилам из .spec_agent/prompts/spec_rules.md.
+1. Обязательно прочитай: .spec_agent/prompts/zenflow/specification_review.md.
+2. Проверь spec.md на полноту, непротиворечивость и трассируемость к задаче.
 3. Зафиксируй решение в {@artifacts_path}/report.md:
    - approve: можно переходить к реализации;
    - change requested: что нужно исправить в spec.md.
@@ -87,9 +84,10 @@ Acceptance criteria:
 - Есть явное решение review (approve или change requested) и обоснование.
 
 ### [ ] Step: Implementation
-1. Внеси изменения в код строго по спецификации.
-2. Обнови связанные спеки рядом с кодом (если поведение меняется).
-3. Зафиксируй результат в {@artifacts_path}/report.md:
+1. Обязательно прочитай: .spec_agent/prompts/zenflow/implementation.md.
+2. Внеси изменения в код строго по спецификации.
+3. Обнови связанные спеки рядом с кодом (если поведение меняется).
+4. Зафиксируй результат в {@artifacts_path}/report.md:
    - что изменено;
    - какие проверки выполнены;
    - ограничения и риски.
@@ -97,9 +95,10 @@ Acceptance criteria:
 - Код и спецификации синхронизированы, report.md заполнен.
 
 ### [ ] Step: Review & Wrap-Up
-1. Проверь соответствие реализации спецификации и plan.md.
-2. Проверь ссылки между спецификациями и итоговую документацию.
-3. Если есть замечания, обнови report.md и вернись к нужному шагу.
+1. Обязательно прочитай: .spec_agent/prompts/zenflow/review_wrap_up.md.
+2. Проверь соответствие реализации спецификации и plan.md.
+3. Проверь ссылки между спецификациями и итоговую документацию.
+4. Если есть замечания, обнови report.md и вернись к нужному шагу.
 Acceptance criteria:
 - Изменения готовы к финальному ревью и передаче.
 `

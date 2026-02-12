@@ -81,10 +81,12 @@ spec-agent init --zenflow
 Дополнительно создаётся файл:
 - `.zenflow/workflows/spec-agent-spec-driven.md` — custom workflow с шагами `Planning`, `Technical Specification`, `Specification Review`, `Implementation`, `Review & Wrap-Up`
 - В workflow используются артефакты Zenflow: `{@artifacts_path}/plan.md`, `{@artifacts_path}/spec.md`, `{@artifacts_path}/report.md`
-- Внутри workflow есть ссылки на правила репозитория:
-  - `.spec_agent/prompts/spec_rules.md`
-  - `.spec_agent/prompts/workflow.md`
-  - `.spec_agent/prompts/agent_prompt.md`
+- Для каждого шага используются отдельные обязательные инструкции:
+  - `.spec_agent/prompts/zenflow/planning.md`
+  - `.spec_agent/prompts/zenflow/technical_specification.md`
+  - `.spec_agent/prompts/zenflow/specification_review.md`
+  - `.spec_agent/prompts/zenflow/implementation.md`
+  - `.spec_agent/prompts/zenflow/review_wrap_up.md`
 
 ### Просмотр спецификаций в браузере
 
