@@ -72,6 +72,20 @@ spec-agent init
 - `.spec_agent/config.yaml` — конфиг с корневыми путями для поиска спецификаций
 - `spec_changes/` — директория для отслеживания изменений
 
+Для интеграции с Zenflow можно сразу создать кастомный workflow:
+
+```bash
+spec-agent init --zenflow
+```
+
+Дополнительно создаётся файл:
+- `.zenflow/workflows/spec-agent-spec-driven.md` — custom workflow с шагами `Planning`, `Technical Specification`, `Specification Review`, `Implementation`, `Review & Wrap-Up`
+- В workflow используются артефакты Zenflow: `{@artifacts_path}/plan.md`, `{@artifacts_path}/spec.md`, `{@artifacts_path}/report.md`
+- Внутри workflow есть ссылки на правила репозитория:
+  - `.spec_agent/prompts/spec_rules.md`
+  - `.spec_agent/prompts/workflow.md`
+  - `.spec_agent/prompts/agent_prompt.md`
+
 ### Просмотр спецификаций в браузере
 
 **Способ 1: Встроенный веб-сервер (рекомендуется)**
