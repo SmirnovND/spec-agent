@@ -18,7 +18,9 @@ var initPHPCmd = &cobra.Command{
 
 Создает:
 - .spec_agent/config.yaml — конфиг с default roots для PHP
-- .spec_agent/php/ — PHP-специфичные правила и примеры
+- .spec_agent/php/examples/ — примеры PHP-спецификаций
+- .spec_agent/php/prompts/base/ — базовые PHP-промты
+- .spec_agent/php/prompts/zenflow/ — добавляются при --zenflow
 - spec_changes/ — директория для планов изменений
 
 Все ресурсы встраиваются в бинарь и автоматически распаковываются.`,

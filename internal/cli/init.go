@@ -19,8 +19,8 @@ var initCmd = &cobra.Command{
 - .spec_agent/ — директория конфигурации
   - config.yaml — файл с корневыми путями (roots)
   - examples/ — примеры спецификаций
-  - prompts/ — промты для LLM
-  - README.md — документация по ресурсам
+  - prompts/base/ — базовые промты для LLM
+  - prompts/zenflow/ — добавляются при --zenflow
 - spec_changes/ — директория для планов изменений
 
 Все ресурсы встраиваются в бинарь и автоматически распаковываются.`,

@@ -6,28 +6,59 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 //go:embed assets
 var embeddedAssets embed.FS
 
+type initProfile struct {
+	config            string
+	examplesAssetDir  string
+	examplesTargetDir string
+	basePromptsDir    string
+	basePromptsTarget string
+	zenflowPromptsDir string
+	zenflowTargetDir  string
+	workflowName      string
+	workflowPromptDir string
+}
+
 func InitSpecAgent(withZenflow bool) error {
-	config := `roots:
+	return initSpecAgent(withZenflow, initProfile{
+		config: `roots:
   - internal/controllers
   - cmd
-`
-	return initSpecAgent(withZenflow, config, "spec-agent-spec-driven.md", ".spec_agent/prompts/zenflow")
+`,
+		examplesAssetDir:  "assets/examples",
+		examplesTargetDir: ".spec_agent/examples",
+		basePromptsDir:    "assets/go/prompts/base",
+		basePromptsTarget: ".spec_agent/prompts/base",
+		zenflowPromptsDir: "assets/go/prompts/zenflow",
+		zenflowTargetDir:  ".spec_agent/prompts/zenflow",
+		workflowName:      "spec-agent-spec-driven.md",
+		workflowPromptDir: ".spec_agent/prompts/zenflow",
+	})
 }
 
 func InitPHPSpecAgent(withZenflow bool) error {
-	config := `roots:
+	return initSpecAgent(withZenflow, initProfile{
+		config: `roots:
   - app/Http/Controllers
   - app/Console/Commands
-`
-	return initSpecAgent(withZenflow, config, "spec-agent-php-spec-driven.md", ".spec_agent/php/prompts/zenflow")
+`,
+		examplesAssetDir:  "assets/php/examples",
+		examplesTargetDir: ".spec_agent/php/examples",
+		basePromptsDir:    "assets/php/prompts/base",
+		basePromptsTarget: ".spec_agent/php/prompts/base",
+		zenflowPromptsDir: "assets/php/prompts/zenflow",
+		zenflowTargetDir:  ".spec_agent/php/prompts/zenflow",
+		workflowName:      "spec-agent-php-spec-driven.md",
+		workflowPromptDir: ".spec_agent/php/prompts/zenflow",
+	})
 }
 
-func initSpecAgent(withZenflow bool, config, workflowName, zenflowPromptPath string) error {
+func initSpecAgent(withZenflow bool, profile initProfile) error {
 	if err := os.MkdirAll(".spec_agent", 0755); err != nil {
 		return err
 	}
@@ -35,21 +66,57 @@ func initSpecAgent(withZenflow bool, config, workflowName, zenflowPromptPath str
 		return err
 	}
 
-	if err := os.WriteFile(".spec_agent/config.yaml", []byte(config), 0644); err != nil {
+	if err := os.WriteFile(".spec_agent/config.yaml", []byte(profile.config), 0644); err != nil {
 		return err
 	}
 
-	if err := copyAssetsToSpecAgent(); err != nil {
+	if err := copyAssetDir(profile.examplesAssetDir, profile.examplesTargetDir); err != nil {
+		return err
+	}
+	if err := copyAssetDir(profile.basePromptsDir, profile.basePromptsTarget); err != nil {
 		return err
 	}
 
 	if withZenflow {
-		if err := createZenflowWorkflow(workflowName, zenflowPromptPath); err != nil {
+		if err := copyAssetDir(profile.zenflowPromptsDir, profile.zenflowTargetDir); err != nil {
+			return err
+		}
+	}
+
+	if withZenflow {
+		if err := createZenflowWorkflow(profile.workflowName, profile.workflowPromptDir); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func copyAssetDir(assetDir, targetDir string) error {
+	return fs.WalkDir(embeddedAssets, assetDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if path == assetDir {
+			return nil
+		}
+
+		rel := strings.TrimPrefix(path, assetDir+"/")
+		destPath := filepath.Join(targetDir, rel)
+
+		if d.IsDir() {
+			return os.MkdirAll(destPath, 0755)
+		}
+
+		data, err := embeddedAssets.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return err
+		}
+		return os.WriteFile(destPath, data, 0644)
+	})
 }
 
 func createZenflowWorkflow(workflowName, zenflowPromptPath string) error {
@@ -116,34 +183,4 @@ Acceptance criteria:
 `, zenflowPromptPath, zenflowPromptPath, zenflowPromptPath, zenflowPromptPath, zenflowPromptPath)
 
 	return os.WriteFile(workflowPath, []byte(workflow), 0644)
-}
-
-func copyAssetsToSpecAgent() error {
-	return fs.WalkDir(embeddedAssets, "assets", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if path == "assets" {
-			return nil
-		}
-
-		relPath := path[len("assets/"):]
-		destPath := filepath.Join(".spec_agent", relPath)
-
-		if d.IsDir() {
-			return os.MkdirAll(destPath, 0755)
-		}
-
-		data, err := embeddedAssets.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
-			return err
-		}
-
-		return os.WriteFile(destPath, data, 0644)
-	})
 }

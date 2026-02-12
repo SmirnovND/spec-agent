@@ -14,19 +14,14 @@
 - Справку по правильному оформлению (структура разделов, ссылки)
 - Эталон качества спецификаций
 
-### `prompts/` — промты и правила для работы с агентом
-Ключевые документы для понимания spec-driven архитектуры:
-- **spec_rules.md** — правила создания и оформления спецификаций
-- **agent_prompt.md** — инструкции для AI-агента, работающего со спецификациями
-- **workflow.md** — жизненный цикл работы агента при изменении спецификаций
-- **zenflow/** — пошаговые инструкции для custom workflow в Zenflow
+### `go/prompts/` — промты Go-профиля
+- `go/prompts/base/*.md` — базовые инструкции для стандартного `spec-agent init`
+- `go/prompts/zenflow/*.md` — этапные инструкции для `--zenflow`
 
 ### `php/` — PHP-профиль
-Ресурсы для PHP-проектов в отдельной области:
-- `php/prompts/spec_rules.md` — правила спецификаций для PHP
-- `php/prompts/agent_prompt.md` — инструкции агенту для PHP
-- `php/prompts/workflow.md` — workflow для PHP
-- `php/prompts/zenflow/*.md` — этапные инструкции для Zenflow (PHP)
+Ресурсы для PHP-проектов:
+- `php/prompts/base/*.md` — базовые инструкции для `spec-agent init-php`
+- `php/prompts/zenflow/*.md` — этапные инструкции для `init-php --zenflow`
 - `php/examples/` — примеры PHP-спецификаций
 
 Используйте при:
@@ -37,10 +32,9 @@
 ## Как использовать
 
 ### Настройка AI-агента
-1. Прочитайте `prompts/agent_prompt.md`
-2. Используйте `prompts/spec_rules.md` как справочник для валидации
-3. Следуйте `prompts/workflow.md` при работе с изменениями
-4. Для Zenflow-процессов используйте файлы из `prompts/zenflow/` по этапам
+1. Для Go: используйте `go/prompts/base/*.md`
+2. Для PHP: используйте `php/prompts/base/*.md`
+3. Для Zenflow-процессов используйте `*/prompts/zenflow/*.md` по этапам
 
 ### Работа со спецификациями
 1. Изучите `spec_rules.md` для понимания правил

@@ -85,9 +85,9 @@ spec-agent init-php
 ```
 
 Дополнительно создаётся отдельный профиль:
-- `.spec_agent/php/prompts/spec_rules.md` — правила для PHP спецификаций
-- `.spec_agent/php/prompts/agent_prompt.md` — базовый prompt для PHP-агента
-- `.spec_agent/php/prompts/workflow.md` — workflow для PHP
+- `.spec_agent/php/prompts/base/spec_rules.md` — правила для PHP спецификаций
+- `.spec_agent/php/prompts/base/agent_prompt.md` — базовый prompt для PHP-агента
+- `.spec_agent/php/prompts/base/workflow.md` — workflow для PHP
 - `.spec_agent/php/examples/` — примеры спецификаций для PHP
 
 Для интеграции с Zenflow можно сразу создать кастомный workflow:
@@ -95,6 +95,10 @@ spec-agent init-php
 ```bash
 spec-agent init --zenflow
 ```
+
+Отличие источников промтов:
+- `init` берёт промты из `internal/fs/assets/go/prompts/base`
+- `init --zenflow` добавляет zenflow-набор из `internal/fs/assets/go/prompts/zenflow`
 
 Дополнительно создаётся файл:
 - `.zenflow/workflows/spec-agent-spec-driven.md` — custom workflow с шагами `Planning`, `Technical Specification`, `Specification Review`, `Implementation`, `Review & Wrap-Up`
@@ -182,7 +186,8 @@ spec-agent/
 │       └── init.go           # Инициализация проекта
 ├── assets/
 │   ├── examples/             # Примеры спецификаций
-│   └── prompts/              # Пример промптов для генерации
+│   ├── go/prompts/           # Go-профиль: base + zenflow
+│   └── php/prompts/          # PHP-профиль: base + zenflow
 ├── go.mod
 ├── go.sum
 └── README.md
