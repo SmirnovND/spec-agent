@@ -10,7 +10,7 @@ import (
 //go:embed assets
 var embeddedAssets embed.FS
 
-func InitSpecAgent() error {
+func InitSpecAgent(withZenflow bool) error {
 	if err := os.MkdirAll(".spec_agent", 0755); err != nil {
 		return err
 	}
@@ -31,7 +31,80 @@ func InitSpecAgent() error {
 		return err
 	}
 
+	if withZenflow {
+		if err := createZenflowWorkflow(); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+func createZenflowWorkflow() error {
+	workflowDir := filepath.Join(".zenflow", "workflows")
+	if err := os.MkdirAll(workflowDir, 0755); err != nil {
+		return err
+	}
+
+	workflowPath := filepath.Join(workflowDir, "spec-agent-spec-driven.md")
+	if _, err := os.Stat(workflowPath); err == nil {
+		return nil
+	}
+
+	workflow := `# Spec-Agent Spec-Driven Workflow
+
+## Configuration
+- **Artifacts Path**: {@artifacts_path} -> .zenflow/tasks/{task_id}
+
+---
+
+## Workflow Steps
+
+### [ ] Step: Planning
+1. Зафиксируй контекст, цель и ограничения задачи.
+2. Составь план в {@artifacts_path}/plan.md.
+3. Добавь ссылки на правила:
+   - .spec_agent/prompts/spec_rules.md
+   - .spec_agent/prompts/workflow.md
+   - .spec_agent/prompts/agent_prompt.md
+Acceptance criteria:
+- В plan.md описаны scope, затронутые компоненты и этапы.
+
+### [ ] Step: Technical Specification
+1. Подготовь/обнови спецификацию в {@artifacts_path}/spec.md.
+2. Опиши Business Logic, Flow, Links и Dependencies.
+3. Проверь соответствие правилам из .spec_agent/prompts/spec_rules.md.
+Acceptance criteria:
+- spec.md содержит полный сценарий изменений и ссылки на связанные спеки.
+
+### [ ] Step: Specification Review
+1. Проверь spec.md на полноту, непротиворечивость и трассируемость к задаче.
+2. Проверь ссылки, зависимости и соответствие правилам из .spec_agent/prompts/spec_rules.md.
+3. Зафиксируй решение в {@artifacts_path}/report.md:
+   - approve: можно переходить к реализации;
+   - change requested: что нужно исправить в spec.md.
+Acceptance criteria:
+- Есть явное решение review (approve или change requested) и обоснование.
+
+### [ ] Step: Implementation
+1. Внеси изменения в код строго по спецификации.
+2. Обнови связанные спеки рядом с кодом (если поведение меняется).
+3. Зафиксируй результат в {@artifacts_path}/report.md:
+   - что изменено;
+   - какие проверки выполнены;
+   - ограничения и риски.
+Acceptance criteria:
+- Код и спецификации синхронизированы, report.md заполнен.
+
+### [ ] Step: Review & Wrap-Up
+1. Проверь соответствие реализации спецификации и plan.md.
+2. Проверь ссылки между спецификациями и итоговую документацию.
+3. Если есть замечания, обнови report.md и вернись к нужному шагу.
+Acceptance criteria:
+- Изменения готовы к финальному ревью и передаче.
+`
+
+	return os.WriteFile(workflowPath, []byte(workflow), 0644)
 }
 
 func copyAssetsToSpecAgent() error {

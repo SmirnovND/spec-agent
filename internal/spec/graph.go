@@ -55,6 +55,10 @@ func walkSpec(specPath string, graph *Graph, visited map[string]bool) error {
 	if visited[specPath] {
 		return nil
 	}
+	ok, err := IsSpecFile(specPath)
+	if err != nil || !ok {
+		return nil
+	}
 	visited[specPath] = true
 
 	if _, exists := graph.Nodes[specPath]; !exists {

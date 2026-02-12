@@ -6,6 +6,7 @@ import (
 )
 
 func init() {
+	initCmd.Flags().Bool("zenflow", false, "создать custom workflow для Zenflow в .zenflow/workflows/")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -24,7 +25,8 @@ var initCmd = &cobra.Command{
 
 Все ресурсы встраиваются в бинарь и автоматически распаковываются.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if err := fs.InitSpecAgent(); err != nil {
+		zenflow, _ := cmd.Flags().GetBool("zenflow")
+		if err := fs.InitSpecAgent(zenflow); err != nil {
 			return err
 		}
 		return nil

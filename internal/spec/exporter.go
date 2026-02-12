@@ -5,6 +5,7 @@ import (
 	"html"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -39,8 +40,19 @@ func ExportToHTML(graph *Graph, outputDir string) error {
 }
 
 func generateIndexHTML(specs map[string]*Spec, graph *Graph) string {
+	_ = graph
+	paths := make([]string, 0, len(specs))
+	for path := range specs {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+
 	toc := ""
-	for path, spec := range specs {
+	for _, path := range paths {
+		spec := specs[path]
+		if !spec.Meta.Menu {
+			continue
+		}
 		if spec.Title == "" {
 			spec.Title = filepath.Base(path)
 		}
@@ -188,11 +200,14 @@ func generateSpecHTML(spec *Spec, allSpecs map[string]*Spec) string {
 		title = filepath.Base(spec.Path)
 	}
 
-	contentHTML := markdownToHTML(spec.Content)
+	contentHTML := markdownToHTML(stripSpecMetaLines(spec.Content))
 
 	navigation := ""
 	for _, link := range spec.Links {
-		filename := generateFilenameFromRelative(spec.Path, link.Path)
+		filename, targetPath := generateFilenameFromRelative(spec.Path, link.Path)
+		if _, exists := allSpecs[targetPath]; !exists {
+			continue
+		}
 		navigation += fmt.Sprintf(`        <li><a href="%s">%s</a></li>
 `, filename, html.EscapeString(link.Title))
 	}
@@ -327,10 +342,35 @@ func generateFilename(path string) string {
 	return filepath.Base(path) + ".html"
 }
 
-func generateFilenameFromRelative(basePath, relativePath string) string {
+func generateFilenameFromRelative(basePath, relativePath string) (string, string) {
+	relativePath = stripAnchor(relativePath)
 	dir := filepath.Dir(basePath)
 	absPath := filepath.Join(dir, relativePath)
-	return filepath.Base(absPath) + ".html"
+	normalized, err := filepath.Abs(absPath)
+	if err != nil {
+		normalized = absPath
+	}
+	return filepath.Base(normalized) + ".html", normalized
+}
+
+func stripAnchor(relativePath string) string {
+	if idx := strings.Index(relativePath, "#"); idx >= 0 {
+		return relativePath[:idx]
+	}
+	return relativePath
+}
+
+func stripSpecMetaLines(content string) string {
+	lines := strings.Split(content, "\n")
+	out := make([]string, 0, len(lines))
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "<!-- SPEC:") && strings.HasSuffix(trimmed, "-->") {
+			continue
+		}
+		out = append(out, line)
+	}
+	return strings.Join(out, "\n")
 }
 
 func markdownToHTML(content string) string {

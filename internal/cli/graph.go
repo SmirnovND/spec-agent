@@ -76,7 +76,14 @@ func findSpecsNearRoots(roots []string) ([]string, error) {
 			if err != nil {
 				return err
 			}
-			if filepath.Ext(path) == ".md" {
+			if d.IsDir() || filepath.Ext(path) != ".md" {
+				return nil
+			}
+			isSpec, err := spec.IsSpecFile(path)
+			if err != nil {
+				return nil
+			}
+			if isSpec {
 				specs = append(specs, path)
 			}
 			return nil

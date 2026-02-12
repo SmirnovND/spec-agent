@@ -6,11 +6,20 @@ type Spec struct {
 	Sections map[string]string
 	Content  string
 	Links    []SpecLink
+	Meta     SpecMeta
 }
 
 type SpecLink struct {
-	Title string
-	Path  string
+	Title  string
+	Path   string
+	Anchor string
+}
+
+type SpecMeta struct {
+	IsSpecFile bool
+	ID         string
+	Kind       string
+	Menu       bool
 }
 
 type Graph struct {
@@ -30,6 +39,6 @@ type Edge struct {
 }
 
 type ExportTree struct {
-	Specs    map[string]*Spec
+	Specs     map[string]*Spec
 	RootSpecs []string
 }
