@@ -33,6 +33,12 @@ spec-agent init
 
 Создаст `.spec_agent/config.yaml` с путями к спецификациям.
 
+Для PHP-проекта:
+
+```bash
+spec-agent init-php
+```
+
 ### 2. Обновите конфиг
 
 ```yaml
@@ -72,6 +78,18 @@ spec-agent init
 - `.spec_agent/config.yaml` — конфиг с корневыми путями для поиска спецификаций
 - `spec_changes/` — директория для отслеживания изменений
 
+Для PHP-проектов используйте отдельную команду:
+
+```bash
+spec-agent init-php
+```
+
+Дополнительно создаётся отдельный профиль:
+- `.spec_agent/php/prompts/spec_rules.md` — правила для PHP спецификаций
+- `.spec_agent/php/prompts/agent_prompt.md` — базовый prompt для PHP-агента
+- `.spec_agent/php/prompts/workflow.md` — workflow для PHP
+- `.spec_agent/php/examples/` — примеры спецификаций для PHP
+
 Для интеграции с Zenflow можно сразу создать кастомный workflow:
 
 ```bash
@@ -87,6 +105,16 @@ spec-agent init --zenflow
   - `.spec_agent/prompts/zenflow/specification_review.md`
   - `.spec_agent/prompts/zenflow/implementation.md`
   - `.spec_agent/prompts/zenflow/review_wrap_up.md`
+
+Для PHP-профиля:
+
+```bash
+spec-agent init-php --zenflow
+```
+
+Создаётся отдельный workflow:
+- `.zenflow/workflows/spec-agent-php-spec-driven.md`
+- шаги ссылаются на `.spec_agent/php/prompts/zenflow/*.md`
 
 ### Просмотр спецификаций в браузере
 

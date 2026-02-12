@@ -21,6 +21,14 @@
 - **workflow.md** — жизненный цикл работы агента при изменении спецификаций
 - **zenflow/** — пошаговые инструкции для custom workflow в Zenflow
 
+### `php/` — PHP-профиль
+Ресурсы для PHP-проектов в отдельной области:
+- `php/prompts/spec_rules.md` — правила спецификаций для PHP
+- `php/prompts/agent_prompt.md` — инструкции агенту для PHP
+- `php/prompts/workflow.md` — workflow для PHP
+- `php/prompts/zenflow/*.md` — этапные инструкции для Zenflow (PHP)
+- `php/examples/` — примеры PHP-спецификаций
+
 Используйте при:
 - Интеграции AI-агента в ваш проект
 - Установлении стандартов для спецификаций
