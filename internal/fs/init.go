@@ -26,7 +26,9 @@ type initProfile struct {
 
 func InitSpecAgent(withZenflow bool) error {
 	return initSpecAgent(withZenflow, initProfile{
-		config: `roots:
+		config: `# Корневые директории для поиска спецификаций и связанного кода.
+# spec-agent сканирует эти пути для построения графа зависимостей и поиска контекста.
+roots:
   - internal/controllers
   - cmd
 `,
@@ -43,7 +45,9 @@ func InitSpecAgent(withZenflow bool) error {
 
 func InitPHPSpecAgent(withZenflow bool) error {
 	return initSpecAgent(withZenflow, initProfile{
-		config: `roots:
+		config: `# Корневые директории для поиска спецификаций и связанного кода (PHP/Laravel).
+# Позволяет агенту ограничить область анализа контроллерами и командами.
+roots:
   - app/Http/Controllers
   - app/Console/Commands
 `,
