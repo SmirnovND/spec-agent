@@ -50,7 +50,7 @@ func generateIndexHTML(specs map[string]*Spec, graph *Graph) string {
 	toc := ""
 	for _, path := range paths {
 		spec := specs[path]
-		if !spec.Meta.Menu {
+		if !shouldIncludeInMenu(spec) {
 			continue
 		}
 		if spec.Title == "" {
@@ -78,22 +78,22 @@ func generateIndexHTML(specs map[string]*Spec, graph *Graph) string {
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 24px 20px;
         }
         header {
             background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
             color: white;
-            padding: 40px 20px;
+            padding: 18px 20px;
             border-radius: 8px;
-            margin-bottom: 40px;
+            margin-bottom: 24px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 1.8em;
+            margin-bottom: 6px;
         }
         header p {
-            font-size: 1.1em;
+            font-size: 0.98em;
             opacity: 0.95;
         }
         .main-content {
@@ -137,21 +137,21 @@ func generateIndexHTML(specs map[string]*Spec, graph *Graph) string {
         }
         .content {
             background: white;
-            padding: 40px;
+            padding: 28px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .welcome {
             text-align: center;
-            padding: 60px 20px;
+            padding: 44px 20px;
         }
         .welcome h2 {
-            font-size: 2em;
+            font-size: 1.7em;
             color: #667eea;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
         .welcome p {
-            font-size: 1.1em;
+            font-size: 1em;
             color: #666;
         }
         @media (max-width: 768px) {
@@ -162,7 +162,7 @@ func generateIndexHTML(specs map[string]*Spec, graph *Graph) string {
                 position: static;
             }
             header h1 {
-                font-size: 1.8em;
+                font-size: 1.5em;
             }
         }
     </style>
@@ -240,34 +240,34 @@ func generateSpecHTML(spec *Spec, allSpecs map[string]*Spec) string {
         .container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 22px 20px;
         }
         header {
             background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%);
             color: white;
-            padding: 30px 20px;
-            margin-bottom: 40px;
+            padding: 16px 20px;
+            margin-bottom: 22px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         header .back-link {
             display: inline-block;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             color: rgba(255,255,255,0.9);
             text-decoration: none;
-            font-size: 0.95em;
+            font-size: 0.9em;
             transition: color 0.2s;
         }
         header .back-link:hover {
             color: white;
         }
         header h1 {
-            font-size: 2em;
+            font-size: 1.55em;
             margin-bottom: 5px;
         }
         .content {
             background: white;
-            padding: 40px;
+            padding: 28px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
@@ -315,8 +315,8 @@ func generateSpecHTML(spec *Spec, allSpecs map[string]*Spec) string {
             color: white;
         }
         @media (max-width: 768px) {
-            .container { padding: 20px 15px; }
-            header h1 { font-size: 1.5em; }
+            .container { padding: 14px 15px; }
+            header h1 { font-size: 1.3em; }
             .content { padding: 20px; }
         }
     </style>
@@ -371,6 +371,19 @@ func stripSpecMetaLines(content string) string {
 		out = append(out, line)
 	}
 	return strings.Join(out, "\n")
+}
+
+func shouldIncludeInMenu(spec *Spec) bool {
+	if spec == nil || !spec.Meta.Menu {
+		return false
+	}
+
+	switch strings.ToLower(strings.TrimSpace(spec.Meta.Kind)) {
+	case "controller", "command":
+		return true
+	default:
+		return false
+	}
 }
 
 func markdownToHTML(content string) string {
