@@ -36,7 +36,7 @@ var exportCmd = &cobra.Command{
 			return fmt.Errorf("в config.yaml не указаны roots")
 		}
 
-		specFiles, err := findSpecsNearRoots(cfg.Roots)
+		specFiles, err := findSpecsNearRoots(cfg.Roots, cfg.Exclude)
 		if err != nil {
 			return err
 		}

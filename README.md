@@ -46,9 +46,13 @@ spec-agent init-php
 roots:
   - internal/services
   - internal/repositories
+exclude:
+  - cmd/staticlint
+  - cmd/server
 ```
 
 Укажите директории, где находятся корневые спецификации (MD-файлы).
+Через `exclude` можно исключить технические папки из сканирования/экспорта.
 
 ### 3. Запустите сервер
 
@@ -229,6 +233,9 @@ Constraint'ы, assumptions, limitations.
 roots:
   - internal/controllers  # Где искать спецификации
   - internal/middleware
+exclude:
+  - cmd/staticlint        # Что исключить из сканирования
+  - cmd/server
 ```
 
 ## Примеры

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -35,7 +36,7 @@ var graphCmd = &cobra.Command{
 			return fmt.Errorf("в config.yaml не указаны roots")
 		}
 
-		specFiles, err := findSpecsNearRoots(cfg.Roots)
+		specFiles, err := findSpecsNearRoots(cfg.Roots, cfg.Exclude)
 		if err != nil {
 			return err
 		}
@@ -68,13 +69,20 @@ var graphCmd = &cobra.Command{
 	},
 }
 
-func findSpecsNearRoots(roots []string) ([]string, error) {
+func findSpecsNearRoots(roots, exclude []string) ([]string, error) {
 	var specs []string
+	normalizedExclude := normalizePaths(exclude)
 
 	for _, root := range roots {
 		err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
+			}
+			if isPathExcluded(path, normalizedExclude) {
+				if d.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
 			}
 			if d.IsDir() || filepath.Ext(path) != ".md" {
 				return nil
@@ -94,4 +102,39 @@ func findSpecsNearRoots(roots []string) ([]string, error) {
 	}
 
 	return specs, nil
+}
+
+func normalizePaths(paths []string) []string {
+	normalized := make([]string, 0, len(paths))
+	for _, p := range paths {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		absPath, err := filepath.Abs(p)
+		if err != nil {
+			continue
+		}
+		normalized = append(normalized, filepath.ToSlash(filepath.Clean(absPath)))
+	}
+	return normalized
+}
+
+func isPathExcluded(path string, excluded []string) bool {
+	if len(excluded) == 0 {
+		return false
+	}
+
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return false
+	}
+
+	normalizedPath := filepath.ToSlash(filepath.Clean(absPath))
+	for _, ex := range excluded {
+		if normalizedPath == ex || strings.HasPrefix(normalizedPath, ex+"/") {
+			return true
+		}
+	}
+	return false
 }

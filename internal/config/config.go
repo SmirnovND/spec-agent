@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	Roots []string `yaml:"roots"`
+	Roots   []string `yaml:"roots"`
+	Exclude []string `yaml:"exclude"`
 }
 
 func Load() (*Config, error) {

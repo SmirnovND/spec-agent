@@ -31,6 +31,12 @@ func InitSpecAgent(withZenflow bool) error {
 roots:
   - internal/controllers
   - cmd
+
+# Опционально: директории, которые нужно исключить из сканирования.
+# Полезно, чтобы техспеки не попадали в HTML/граф.
+exclude:
+  - cmd/staticlint
+  - cmd/server
 `,
 		examplesAssetDir:  "assets/examples",
 		examplesTargetDir: ".spec_agent/examples",
@@ -50,6 +56,9 @@ func InitPHPSpecAgent(withZenflow bool) error {
 roots:
   - app/Http/Controllers
   - app/Console/Commands
+
+# Опционально: исключения из сканирования.
+exclude: []
 `,
 		examplesAssetDir:  "assets/php/examples",
 		examplesTargetDir: ".spec_agent/php/examples",
