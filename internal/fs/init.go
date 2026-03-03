@@ -2,6 +2,7 @@ package fs
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -22,7 +23,15 @@ type initProfile struct {
 	zenflowTargetDir  string
 	workflowName      string
 	workflowPromptDir string
+	readmePromptDir   string
+	readmeExamplesDir string
+	readmeZenflowDir  string
 }
+
+const (
+	readmeAIPromptStart = "<!-- SPEC_AGENT:AI_PROMPTS:START -->"
+	readmeAIPromptEnd   = "<!-- SPEC_AGENT:AI_PROMPTS:END -->"
+)
 
 func InitSpecAgent(withZenflow bool) error {
 	return initSpecAgent(withZenflow, initProfile{
@@ -46,6 +55,9 @@ exclude:
 		zenflowTargetDir:  ".spec_agent/prompts/zenflow",
 		workflowName:      "spec-agent-spec-driven.md",
 		workflowPromptDir: ".spec_agent/prompts/zenflow",
+		readmePromptDir:   ".spec_agent/prompts/base",
+		readmeExamplesDir: ".spec_agent/examples",
+		readmeZenflowDir:  ".spec_agent/prompts/zenflow",
 	})
 }
 
@@ -68,6 +80,9 @@ exclude: []
 		zenflowTargetDir:  ".spec_agent/php/prompts/zenflow",
 		workflowName:      "spec-agent-php-spec-driven.md",
 		workflowPromptDir: ".spec_agent/php/prompts/zenflow",
+		readmePromptDir:   ".spec_agent/php/prompts/base",
+		readmeExamplesDir: ".spec_agent/php/examples",
+		readmeZenflowDir:  ".spec_agent/php/prompts/zenflow",
 	})
 }
 
@@ -102,7 +117,53 @@ func initSpecAgent(withZenflow bool, profile initProfile) error {
 		}
 	}
 
+	if err := ensureReadmeAIPromptsSection(profile); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func ensureReadmeAIPromptsSection(profile initProfile) error {
+	readmePath := "README.md"
+	section := buildReadmeAIPromptsSection(profile)
+
+	data, err := os.ReadFile(readmePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return os.WriteFile(readmePath, []byte(section+"\n"), 0644)
+		}
+		return err
+	}
+
+	content := string(data)
+	if strings.Contains(content, readmeAIPromptStart) {
+		return nil
+	}
+
+	trimmed := strings.TrimRight(content, "\n")
+	updated := trimmed + "\n\n" + section + "\n"
+	return os.WriteFile(readmePath, []byte(updated), 0644)
+}
+
+func buildReadmeAIPromptsSection(profile initProfile) string {
+	return fmt.Sprintf(`%s
+## Инструкции для AI-агентов (spec-agent)
+
+Перед началом задачи обязательно прочитайте:
+- %s/agent_prompt.md
+- %s/spec_rules.md
+- %s/workflow.md
+
+Рекомендуемый порядок работы:
+1. Определить entry-point спецификацию и собрать дерево зависимостей.
+2. Сначала обновить Markdown-спецификации, затем код.
+3. При изменении поведения синхронизировать разделы Business Logic, Flow, Links, Dependencies.
+4. Для шаблонов спецификаций использовать примеры из %s/.
+5. После реализации запустить линтеры и тесты проекта.
+
+Если используется Zenflow workflow, дополнительно используйте этапные инструкции из %s/.
+%s`, readmeAIPromptStart, profile.readmePromptDir, profile.readmePromptDir, profile.readmePromptDir, profile.readmeExamplesDir, profile.readmeZenflowDir, readmeAIPromptEnd)
 }
 
 func copyAssetDir(assetDir, targetDir string) error {
