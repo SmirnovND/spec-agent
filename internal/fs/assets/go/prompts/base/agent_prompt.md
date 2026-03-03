@@ -33,6 +33,11 @@ CORE PRINCIPLES
 - All dependencies between components MUST be described via explicit links in Markdown specs.
 - Hidden or implicit dependencies are forbidden.
 
+5. Layered Responsibility
+- Scenario orchestration MUST be implemented in usecase layer.
+- Service layer MUST provide reusable technical/business steps invoked by usecase.
+- If logic describes an end-to-end business scenario flow, it MUST NOT be implemented inside service.
+
 --------------------------------
 WORKFLOW
 --------------------------------
@@ -63,6 +68,11 @@ For each step:
 1. Update the specification first
 2. Then update the Go code
 3. Mark the step as completed in the change plan
+
+STEP 5 — Verification (mandatory)
+- After implementation, run project linters.
+- After implementation, run project tests.
+- Record verification results in the task report (what was run and whether it passed).
 
 --------------------------------
 SPECIFICATION RULES
