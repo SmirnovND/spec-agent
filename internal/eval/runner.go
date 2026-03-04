@@ -90,7 +90,7 @@ func runTask(opts RunOptions, taskDir string, thresholds Thresholds) (TaskResult
 	started := time.Now()
 	runErr := ""
 	if strings.TrimSpace(cfg.RunCommand) != "" {
-		cmd := exec.Command("sh", "-lc", cfg.RunCommand)
+		cmd := exec.Command("sh", "-c", cfg.RunCommand)
 		cmd.Env = append(os.Environ(),
 			"WORKSPACE="+workspace,
 			"TASK_DIR="+taskDir,
@@ -416,7 +416,7 @@ func runTestCommands(workspace string, cmds []string) (int, int, []string) {
 			continue
 		}
 		total++
-		cmd := exec.Command("sh", "-lc", c)
+		cmd := exec.Command("sh", "-c", c)
 		cmd.Dir = workspace
 		out, err := cmd.CombinedOutput()
 		if err == nil {
