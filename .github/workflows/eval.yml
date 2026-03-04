@@ -1,0 +1,100 @@
+name: Eval
+
+on:
+  pull_request:
+    paths:
+      - 'internal/fs/assets/**'
+      - 'internal/promptgen/**'
+      - 'cmd/promptgen/**'
+      - 'internal/fs/**'
+      - 'internal/eval/**'
+      - 'cmd/eval-runner/**'
+      - 'eval/**'
+      - '.github/workflows/eval.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'internal/fs/assets/**'
+      - 'internal/promptgen/**'
+      - 'cmd/promptgen/**'
+      - 'internal/fs/**'
+      - 'internal/eval/**'
+      - 'cmd/eval-runner/**'
+      - 'eval/**'
+      - '.github/workflows/eval.yml'
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+jobs:
+  quick:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.24
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          if ! command -v git >/dev/null 2>&1 || ! command -v perl >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y git perl ca-certificates
+            rm -rf /var/lib/apt/lists/*
+          fi
+
+      - name: Sync draft fixture
+        run: |
+          bash eval/scripts/fetch_draft_fixture.sh
+
+      - name: Build spec-agent binary
+        run: |
+          mkdir -p bin
+          go build -o ./bin/spec-agent ./cmd/spec-agent
+
+      - name: Run quick eval
+        run: |
+          go run ./cmd/eval-runner -tasks bootstrap,bugfix,development
+
+      - name: Upload eval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-quick-${{ github.run_id }}
+          path: eval/results/*.json
+
+  full:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.24
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          if ! command -v git >/dev/null 2>&1 || ! command -v perl >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y git perl ca-certificates
+            rm -rf /var/lib/apt/lists/*
+          fi
+
+      - name: Sync draft fixture
+        run: |
+          bash eval/scripts/fetch_draft_fixture.sh
+
+      - name: Build spec-agent binary
+        run: |
+          mkdir -p bin
+          go build -o ./bin/spec-agent ./cmd/spec-agent
+
+      - name: Run full eval
+        run: |
+          go run ./cmd/eval-runner
+
+      - name: Upload eval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-full-${{ github.run_id }}
+          path: eval/results/*.json

@@ -381,6 +381,33 @@ go run ./cmd/promptgen
 go run ./cmd/promptgen -check
 ```
 
+### Eval-набор (MVP)
+
+В репозитории добавлен базовый eval-контур для проверки качества промптов:
+- задачи: `eval/tasks/*`
+- фикстуры: `eval/fixtures/*`
+- пороги качества: `eval/baselines/thresholds.yaml`
+- раннер: `cmd/eval-runner`
+
+Локальный запуск:
+
+```bash
+bash eval/scripts/fetch_draft_fixture.sh
+go run ./cmd/eval-runner                 # все задачи
+go run ./cmd/eval-runner -tasks bootstrap,bugfix,development
+```
+
+Считаемые метрики:
+- `completeness`
+- `scope_violations`
+- `test_pass_rate`
+- `spec_rule_violations`
+
+CI workflow:
+- `.github/workflows/eval.yml` (быстрый прогон на PR/push по paths-фильтрам, полный по schedule/manual)
+- JSON-результаты сохраняются в `eval/results/*.json` и загружаются как artifacts
+- в GitHub eval выполняется в одноразовом контейнере (`golang:1.24`), после завершения контейнер удаляется
+
 ### Структура команд
 
 Каждая команда в `internal/cli/` соответствует CLI команде:

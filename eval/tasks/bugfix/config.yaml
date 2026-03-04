@@ -1,0 +1,10 @@
+name: bugfix_router_di_fallback
+fixture: draft/repo
+run_command: bash eval/tasks/bugfix/run.sh
+allowed_paths:
+  - README.md
+  - .spec_agent/**
+  - internal/router/**
+  - spec_changes/**
+test_commands:
+  - go test ./internal/services ./internal/controllers ./internal/repositories ./internal/router

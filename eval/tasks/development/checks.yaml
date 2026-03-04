@@ -1,0 +1,19 @@
+checkpoints:
+  - id: init_prompts_created
+    type: file_exists
+    path: .spec_agent/prompts/entrypoint.md
+  - id: keep_ping_route
+    type: file_contains
+    path: internal/router/router.go
+    pattern: "r.Get(\"/ping\", healthcheckController.HandlePing)"
+  - id: add_healthz_route
+    type: file_contains
+    path: internal/router/router.go
+    pattern: "r.Get(\"/healthz\", healthcheckController.HandlePing)"
+  - id: update_router_spec
+    type: file_contains
+    path: internal/router/router.md
+    pattern: "healthz"
+  - id: write_spec_changes
+    type: glob_exists
+    path: spec_changes/*development*.md

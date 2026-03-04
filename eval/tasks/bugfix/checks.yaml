@@ -1,0 +1,19 @@
+checkpoints:
+  - id: init_prompts_created
+    type: file_exists
+    path: .spec_agent/prompts/entrypoint.md
+  - id: add_fallback_http_handler
+    type: file_contains
+    path: internal/router/router.go
+    pattern: "return http.HandlerFunc"
+  - id: add_internal_server_error_status
+    type: file_contains
+    path: internal/router/router.go
+    pattern: "http.StatusInternalServerError"
+  - id: update_router_spec
+    type: file_contains
+    path: internal/router/router.md
+    pattern: "fallback handler"
+  - id: write_spec_changes
+    type: glob_exists
+    path: spec_changes/*bugfix*.md
