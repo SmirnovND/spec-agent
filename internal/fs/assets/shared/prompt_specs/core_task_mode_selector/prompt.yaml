@@ -1,0 +1,41 @@
+title: Task Mode Selector (Core)
+purpose: Rules for automatic task-mode selection by task intent.
+output_file: ../../prompts/core/task_mode_selector.md
+persona:
+  - The agent classifies task type before acting.
+  - The agent chooses the minimal sufficient mode.
+  - The agent records mode choice in spec_changes.
+workflow_steps:
+  - name: Task Classification
+    steps:
+      - "bugfix: fix a defect without expanding scope/functionality."
+      - "development: implement new functionality or behavior changes."
+      - "refactor: improve structure/quality without intended behavior changes."
+      - "tests: add or fix tests as the primary goal."
+      - "analysis: answer questions about the system without file changes."
+  - name: Mode Application
+    steps:
+      - Select exactly one primary mode.
+      - If secondary mode is needed, record it as secondary in spec_changes.
+      - Apply workflow from .spec_agent/prompts/modes/.
+must_rules:
+  - Default to bugfix for defect-fix requests unless redesign is requested.
+  - development/refactor/tests require iterative plan-based execution.
+  - analysis mode must not change code or specifications.
+  - Every mode requires creating/updating spec_changes file.
+tool_policy:
+  allowed:
+    - Use request context and local evidence to classify task type.
+  forbidden:
+    - Choosing a heavier mode without reason.
+    - Skipping mode record in spec_changes.
+  notes:
+    - If type is ambiguous, choose safest mode and state assumptions.
+output_contract:
+  required_sections:
+    - Task type
+    - Selected mode
+    - Why this mode
+    - spec_changes file
+  rules:
+    - Mode choice must be concise and verifiable.

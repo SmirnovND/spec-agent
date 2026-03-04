@@ -1,0 +1,41 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+## v2.0.0 - 2026-03-04
+
+### Breaking Changes
+
+- Prompt architecture switched to a single entrypoint model:
+  - `.spec_agent/prompts/entrypoint.md`
+  - `.spec_agent/prompts/core/*`
+  - `.spec_agent/prompts/modes/*`
+- Platform-specific adapter profiles were replaced by task-mode workflows:
+  - `bugfix`, `development`, `refactor`, `tests`, `analysis`
+- Shared prompt language policy changed:
+  - `core` and `modes` prompts are in English
+  - specification content/output remains Russian
+
+### Features
+
+- Added machine-readable prompt source layer (`prompt.yaml`) for shared prompts.
+- Added prompt generator CLI:
+  - `go run ./cmd/promptgen`
+  - `go run ./cmd/promptgen -check`
+- Added single routing entry prompt (`entrypoint`) with mandatory task-mode selection.
+- Added task-mode selector and dedicated mode workflows.
+- Added `internal/promptgen` package with generation and validation logic.
+- Added tests for prompt generation checks.
+
+### Behavior Changes
+
+- Re-running `spec-agent init` or `spec-agent init-php` no longer overwrites existing files.
+- `init` now creates only missing files for config/prompts/examples.
+
+### Documentation
+
+- Updated README and assets docs for:
+  - entrypoint-based prompt routing
+  - task modes
+  - machine-readable prompt generation
+  - language policy

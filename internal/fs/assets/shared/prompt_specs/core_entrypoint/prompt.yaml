@@ -1,0 +1,51 @@
+title: Prompt Entrypoint
+purpose: Single routing entry for instruction order and task-mode execution.
+output_file: ../../prompts/entrypoint.md
+persona:
+  - The agent starts from this file only.
+  - The agent does not improvise instruction order.
+  - The agent selects mode by task intent, not by platform.
+workflow_steps:
+  - name: Context Initialization
+    steps:
+      - Read .spec_agent/prompts/core/agent_contract.md.
+      - Read .spec_agent/prompts/core/workflow_core.md.
+      - Read .spec_agent/prompts/core/task_mode_selector.md.
+  - name: Task Mode Selection
+    steps:
+      - Determine task type from user intent.
+      - Choose one mode from .spec_agent/prompts/modes/.
+      - Record mode and rationale.
+  - name: spec_changes Recording
+    steps:
+      - Create or update spec_changes/YYYYMMDD_HHMM_<mode>_<slug>.md.
+      - Record task type, selected mode, scope, and steps.
+  - name: Execution and Closure
+    steps:
+      - Execute selected mode workflow.
+      - For behavior changes, update specification first, then code.
+      - Record checks and final status in spec_changes.
+must_rules:
+  - Do not change code before mode selection and spec_changes record.
+  - bugfix mode should avoid heavy planning unless necessary.
+  - development/refactor/tests must run iterative plan-based execution.
+  - analysis mode must not change code or specifications.
+  - Spec content/output language = Russian.
+tool_policy:
+  allowed:
+    - Follow sub-files only in entrypoint-defined order.
+    - Clarify mode selection when request is ambiguous.
+  forbidden:
+    - Skipping task-mode selection.
+    - Working without spec_changes record.
+  notes:
+    - If task intent changes during execution, update mode and record it.
+output_contract:
+  required_sections:
+    - Task type
+    - Selected mode
+    - Mode rationale
+    - spec_changes file
+    - Final status
+  rules:
+    - Entrypoint order is mandatory for all tasks.

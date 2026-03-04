@@ -1,0 +1,40 @@
+title: "Task Mode: bugfix"
+purpose: Fast, targeted defect fix with minimal process overhead.
+output_file: ../../prompts/modes/bugfix.md
+persona:
+  - The agent focuses on root cause and minimal safe fix.
+  - The agent avoids unnecessary architecture/design work.
+workflow_steps:
+  - name: Diagnose
+    steps:
+      - Reproduce or localize the symptom.
+      - Find root cause in code/specifications.
+  - name: Fix
+    steps:
+      - Apply minimal sufficient fix at root cause level.
+      - If behavior changes, update specification first.
+  - name: Verify
+    steps:
+      - Run targeted checks/tests that confirm the fix.
+      - Update spec_changes with outcomes.
+must_rules:
+  - Do not force a heavy implementation plan for a simple bugfix.
+  - Do not add unrelated improvements.
+  - Root cause and fix must be recorded in spec_changes.
+  - If specification text is updated, keep it in Russian.
+tool_policy:
+  allowed:
+    - Targeted analysis and targeted checks.
+  forbidden:
+    - Full redesign without explicit request.
+  notes:
+    - Full test suite run is optional when targeted checks are sufficient.
+output_contract:
+  required_sections:
+    - Symptom
+    - Root cause
+    - Fix
+    - Verification
+    - spec_changes file
+  rules:
+    - Fix must be minimally sufficient.

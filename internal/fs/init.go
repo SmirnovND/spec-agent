@@ -14,18 +14,20 @@ import (
 var embeddedAssets embed.FS
 
 type initProfile struct {
-	config            string
-	examplesAssetDir  string
-	examplesTargetDir string
-	basePromptsDir    string
-	basePromptsTarget string
-	zenflowPromptsDir string
-	zenflowTargetDir  string
-	workflowName      string
-	workflowPromptDir string
-	readmePromptDir   string
-	readmeExamplesDir string
-	readmeZenflowDir  string
+	config              string
+	examplesAssetDir    string
+	examplesTargetDir   string
+	sharedPromptsDir    string
+	sharedPromptsTarget string
+	basePromptsDir      string
+	basePromptsTarget   string
+	zenflowPromptsDir   string
+	zenflowTargetDir    string
+	workflowName        string
+	workflowPromptDir   string
+	readmePromptDir     string
+	readmeExamplesDir   string
+	readmeZenflowDir    string
 }
 
 const (
@@ -47,17 +49,19 @@ exclude:
   - cmd/staticlint
   - cmd/server
 `,
-		examplesAssetDir:  "assets/examples",
-		examplesTargetDir: ".spec_agent/examples",
-		basePromptsDir:    "assets/go/prompts/base",
-		basePromptsTarget: ".spec_agent/prompts/base",
-		zenflowPromptsDir: "assets/go/prompts/zenflow",
-		zenflowTargetDir:  ".spec_agent/prompts/zenflow",
-		workflowName:      "spec-agent-spec-driven.md",
-		workflowPromptDir: ".spec_agent/prompts/zenflow",
-		readmePromptDir:   ".spec_agent/prompts/base",
-		readmeExamplesDir: ".spec_agent/examples",
-		readmeZenflowDir:  ".spec_agent/prompts/zenflow",
+		examplesAssetDir:    "assets/examples",
+		examplesTargetDir:   ".spec_agent/examples",
+		sharedPromptsDir:    "assets/shared/prompts",
+		sharedPromptsTarget: ".spec_agent/prompts",
+		basePromptsDir:      "assets/go/prompts/base",
+		basePromptsTarget:   ".spec_agent/prompts/base",
+		zenflowPromptsDir:   "assets/go/prompts/zenflow",
+		zenflowTargetDir:    ".spec_agent/prompts/zenflow",
+		workflowName:        "spec-agent-spec-driven.md",
+		workflowPromptDir:   ".spec_agent/prompts/zenflow",
+		readmePromptDir:     ".spec_agent/prompts/base",
+		readmeExamplesDir:   ".spec_agent/examples",
+		readmeZenflowDir:    ".spec_agent/prompts/zenflow",
 	})
 }
 
@@ -72,17 +76,19 @@ roots:
 # Опционально: исключения из сканирования.
 exclude: []
 `,
-		examplesAssetDir:  "assets/php/examples",
-		examplesTargetDir: ".spec_agent/php/examples",
-		basePromptsDir:    "assets/php/prompts/base",
-		basePromptsTarget: ".spec_agent/php/prompts/base",
-		zenflowPromptsDir: "assets/php/prompts/zenflow",
-		zenflowTargetDir:  ".spec_agent/php/prompts/zenflow",
-		workflowName:      "spec-agent-php-spec-driven.md",
-		workflowPromptDir: ".spec_agent/php/prompts/zenflow",
-		readmePromptDir:   ".spec_agent/php/prompts/base",
-		readmeExamplesDir: ".spec_agent/php/examples",
-		readmeZenflowDir:  ".spec_agent/php/prompts/zenflow",
+		examplesAssetDir:    "assets/php/examples",
+		examplesTargetDir:   ".spec_agent/php/examples",
+		sharedPromptsDir:    "assets/shared/prompts",
+		sharedPromptsTarget: ".spec_agent/prompts",
+		basePromptsDir:      "assets/php/prompts/base",
+		basePromptsTarget:   ".spec_agent/php/prompts/base",
+		zenflowPromptsDir:   "assets/php/prompts/zenflow",
+		zenflowTargetDir:    ".spec_agent/php/prompts/zenflow",
+		workflowName:        "spec-agent-php-spec-driven.md",
+		workflowPromptDir:   ".spec_agent/php/prompts/zenflow",
+		readmePromptDir:     ".spec_agent/php/prompts/base",
+		readmeExamplesDir:   ".spec_agent/php/examples",
+		readmeZenflowDir:    ".spec_agent/php/prompts/zenflow",
 	})
 }
 
@@ -94,11 +100,14 @@ func initSpecAgent(withZenflow bool, profile initProfile) error {
 		return err
 	}
 
-	if err := os.WriteFile(".spec_agent/config.yaml", []byte(profile.config), 0644); err != nil {
+	if err := writeFileIfNotExists(".spec_agent/config.yaml", []byte(profile.config), 0644); err != nil {
 		return err
 	}
 
 	if err := copyAssetDir(profile.examplesAssetDir, profile.examplesTargetDir); err != nil {
+		return err
+	}
+	if err := copyAssetDir(profile.sharedPromptsDir, profile.sharedPromptsTarget); err != nil {
 		return err
 	}
 	if err := copyAssetDir(profile.basePromptsDir, profile.basePromptsTarget); err != nil {
@@ -151,16 +160,15 @@ func buildReadmeAIPromptsSection(profile initProfile) string {
 ## Инструкции для AI-агентов (spec-agent)
 
 Перед началом задачи обязательно прочитайте:
+- .spec_agent/prompts/entrypoint.md
 - %s/agent_prompt.md
 - %s/spec_rules.md
 - %s/workflow.md
 
 Рекомендуемый порядок работы:
-1. Определить entry-point спецификацию и собрать дерево зависимостей.
-2. Сначала обновить Markdown-спецификации, затем код.
-3. При изменении поведения синхронизировать разделы Business Logic, Flow, Links, Dependencies.
-4. Для шаблонов спецификаций использовать примеры из %s/.
-5. После реализации запустить линтеры и тесты проекта.
+1. Следовать порядку из .spec_agent/prompts/entrypoint.md.
+2. Для шаблонов спецификаций использовать примеры из %s/.
+3. После реализации запустить линтеры и тесты проекта.
 
 Если используется Zenflow workflow, дополнительно используйте этапные инструкции из %s/.
 %s`, readmeAIPromptStart, profile.readmePromptDir, profile.readmePromptDir, profile.readmePromptDir, profile.readmeExamplesDir, profile.readmeZenflowDir, readmeAIPromptEnd)
@@ -189,8 +197,17 @@ func copyAssetDir(assetDir, targetDir string) error {
 		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
 			return err
 		}
-		return os.WriteFile(destPath, data, 0644)
+		return writeFileIfNotExists(destPath, data, 0644)
 	})
+}
+
+func writeFileIfNotExists(path string, data []byte, perm os.FileMode) error {
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return os.WriteFile(path, data, perm)
 }
 
 func createZenflowWorkflow(workflowName, zenflowPromptPath string) error {

@@ -1,0 +1,45 @@
+title: "Task Mode: refactor"
+purpose: Improve code structure/quality without intended behavior change.
+output_file: ../../prompts/modes/refactor.md
+persona:
+  - The agent performs pre-refactor analysis first.
+  - The agent executes refactoring in safe, iterative steps.
+workflow_steps:
+  - name: Pre-Refactor Analysis
+    steps:
+      - Record refactor drivers (duplication, complexity, coupling, debt).
+      - Define constraints and invariants that must not change.
+  - name: Refactor Plan
+    steps:
+      - Split refactor into safe incremental steps.
+      - Define expected behavior invariants.
+  - name: Iterative Refactoring
+    steps:
+      - Execute one refactor step at a time.
+      - Validate invariants after each step.
+  - name: Verification
+    steps:
+      - Run relevant tests/linters.
+      - Record behavior-preservation evidence in spec_changes.
+must_rules:
+  - Refactor requires analysis and a plan.
+  - Do not change business behavior unless switching to development mode.
+  - Behavior invariants must be explicit in spec_changes.
+  - If specification text is updated, keep it in Russian.
+tool_policy:
+  allowed:
+    - Structural improvements that increase maintainability.
+  forbidden:
+    - Hidden functional changes under refactor label.
+  notes:
+    - If behavior change is required, explicitly switch mode and record it.
+output_contract:
+  required_sections:
+    - Refactor goals
+    - Analysis
+    - Plan
+    - Invariants
+    - Verification
+    - spec_changes file
+  rules:
+    - Final report must confirm no unintended behavior change.

@@ -1,0 +1,54 @@
+title: Agent Contract (Core)
+purpose: Unified base contract for AI agents regardless of platform.
+output_file: ../../prompts/core/agent_contract.md
+persona:
+  - The agent follows a specification-first approach.
+  - The agent preserves traceability between request, specification, and code.
+  - The agent selects a task mode based on intent before execution.
+workflow_steps:
+  - name: Task Classification
+    steps:
+      - Determine task type (bugfix, development, refactor, tests, analysis).
+      - Apply the matching mode from .spec_agent/prompts/modes/.
+  - name: Analysis
+    steps:
+      - Identify entry-point and load related specifications.
+      - Define scope and dependency boundaries.
+  - name: Execution
+    steps:
+      - If behavior changes, update specification first.
+      - Update code strictly within approved scope.
+  - name: Verification
+    steps:
+      - Run project linters and tests.
+      - Record verification results in the report.
+must_rules:
+  - If code conflicts with specification, specification is the source of truth.
+  - Do not invent behavior not described by specifications.
+  - Do not change unrelated modules.
+  - Scenario orchestration belongs to usecase; service contains reusable steps.
+  - For every task, create or update a file in spec_changes.
+  - Spec content/output language = Russian.
+  - Do not write business specification text in English.
+tool_policy:
+  allowed:
+    - Read specifications and code relevant to the task.
+    - Update specifications and code while preserving traceability.
+    - Run local project checks.
+  forbidden:
+    - Hidden or unapproved out-of-scope changes.
+    - Replacing specification intent with implementation assumptions.
+  notes:
+    - Code identifiers, file names, and links may remain in English.
+output_contract:
+  required_sections:
+    - Task mode
+    - Scope
+    - spec_changes file
+    - Updated specifications
+    - Code changes
+    - Verification
+    - Risks and limitations
+  rules:
+    - Report must be concise and verifiable.
+    - Any skipped checks must be explicitly stated.

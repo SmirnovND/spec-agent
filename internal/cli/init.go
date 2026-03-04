@@ -23,7 +23,8 @@ var initCmd = &cobra.Command{
   - prompts/zenflow/ — добавляются при --zenflow
 - spec_changes/ — директория для планов изменений
 
-Все ресурсы встраиваются в бинарь и автоматически распаковываются.`,
+Все ресурсы встраиваются в бинарь и автоматически распаковываются.
+Примечание: повторный запуск не перезаписывает существующие файлы; добавляются только отсутствующие.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zenflow, _ := cmd.Flags().GetBool("zenflow")
 		if err := fs.InitSpecAgent(zenflow); err != nil {

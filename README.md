@@ -32,12 +32,14 @@ spec-agent init
 ```
 
 Создаст `.spec_agent/config.yaml` с путями к спецификациям.
+При повторном запуске `init` существующие файлы не перезаписываются: добавляются только отсутствующие.
 
 Для PHP-проекта:
 
 ```bash
 spec-agent init-php
 ```
+При повторном запуске `init-php` существующие файлы не перезаписываются: добавляются только отсутствующие.
 
 ### 2. Обновите конфиг
 
@@ -108,6 +110,14 @@ spec-agent init --zenflow
 Отличие источников промтов:
 - `init` берёт промты из `internal/fs/assets/go/prompts/base`
 - `init --zenflow` добавляет zenflow-набор из `internal/fs/assets/go/prompts/zenflow`
+- `init` также добавляет общий слой в `.spec_agent/prompts/`:
+  - `entrypoint.md`: единый вход и порядок чтения инструкций
+  - `core/*`: единый контракт, базовый workflow и task-mode selector
+  - `modes/*`: режимы по типу задачи (`bugfix`, `development`, `refactor`, `tests`, `analysis`)
+
+Языковая политика промптов:
+- `.spec_agent/prompts/core/*` и `.spec_agent/prompts/modes/*` — на английском.
+- Спецификации рядом с кодом (`*.md`) и бизнес-текст — на русском.
 
 Дополнительно создаётся файл:
 - `.zenflow/workflows/spec-agent-spec-driven.md` — custom workflow с шагами `Planning`, `Technical Specification`, `Specification Review`, `Implementation`, `Review & Wrap-Up`
@@ -128,6 +138,7 @@ spec-agent init-php --zenflow
 Создаётся отдельный workflow:
 - `.zenflow/workflows/spec-agent-php-spec-driven.md`
 - шаги ссылаются на `.spec_agent/php/prompts/zenflow/*.md`
+- общий слой `.spec_agent/prompts/entrypoint.md`, `.spec_agent/prompts/core` и `.spec_agent/prompts/modes` также создаётся
 
 ### Просмотр спецификаций в браузере
 
@@ -177,6 +188,8 @@ spec-agent graph
 spec-agent/
 ├── cmd/spec-agent/
 │   └── main.go               # Точка входа приложения
+├── cmd/promptgen/
+│   └── main.go               # Генерация markdown из prompt.yaml
 ├── internal/
 │   ├── cli/                  # Команды CLI (Cobra)
 │   │   ├── root.go           # Корневая команда
@@ -195,6 +208,8 @@ spec-agent/
 │       └── init.go           # Инициализация проекта
 ├── assets/
 │   ├── examples/             # Примеры спецификаций
+│   ├── shared/prompts/       # Общий слой: entrypoint + core + task modes
+│   ├── shared/prompt_specs/  # Машинно-читабельные prompt.yaml
 │   ├── go/prompts/           # Go-профиль: base + zenflow
 │   └── php/prompts/          # PHP-профиль: base + zenflow
 ├── go.mod
@@ -324,6 +339,21 @@ go build -o spec-agent ./cmd/spec-agent
 
 ```bash
 go test ./...
+```
+
+### Генерация prompt-маркировки
+
+Исходники промптов хранятся в `internal/fs/assets/shared/prompt_specs/**/prompt.yaml`.
+Сгенерировать markdown:
+
+```bash
+go run ./cmd/promptgen
+```
+
+Проверить, что markdown актуален:
+
+```bash
+go run ./cmd/promptgen -check
 ```
 
 ### Структура команд

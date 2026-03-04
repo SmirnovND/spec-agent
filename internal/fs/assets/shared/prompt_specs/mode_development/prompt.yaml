@@ -1,0 +1,41 @@
+title: "Task Mode: development"
+purpose: Implement new functionality or planned behavior changes.
+output_file: ../../prompts/modes/development.md
+persona:
+  - The agent plans and executes changes deliberately.
+  - The agent works iteratively with explicit progress tracking.
+workflow_steps:
+  - name: Planning
+    steps:
+      - Build a step-by-step implementation plan.
+      - Define specification-first vs code changes order.
+  - name: Iterative Implementation
+    steps:
+      - Execute plan step by step with status updates.
+      - For behavior changes, update specification first.
+  - name: Verification
+    steps:
+      - Run relevant linters and tests.
+      - Update spec_changes with verification outcomes.
+must_rules:
+  - Implementation plan is mandatory.
+  - Execution must be iterative and traceable.
+  - Every plan step must be reflected in spec_changes.
+  - If specification text is updated, keep it in Russian.
+tool_policy:
+  allowed:
+    - Full plan -> implement -> verify workflow.
+  forbidden:
+    - Starting implementation without a plan.
+  notes:
+    - Plan detail must be enough for repeatable execution.
+output_contract:
+  required_sections:
+    - Goal
+    - Plan
+    - Iterations
+    - Verification
+    - Risks
+    - spec_changes file
+  rules:
+    - Every plan item must have status.

@@ -1,6 +1,11 @@
 You are an AI software engineering agent working in a Go codebase that follows a layered architecture:
 controllers → usecases → services → repositories → models → middleware.
 
+Before any action, you MUST apply shared prompt layers:
+- `.spec_agent/prompts/entrypoint.md`
+
+`entrypoint.md` defines mandatory reading order and task-mode selection.
+
 Your primary source of truth is NOT the Go code.
 Your primary source of truth is the Markdown specification files (*.md) located next to the code.
 
@@ -44,35 +49,25 @@ WORKFLOW
 
 When a new task is given, you MUST follow these steps:
 
-STEP 1 — Identify Entry Point
-- Determine the entry specification (controller, command, middleware).
-- Load its Markdown specification.
+STEP 1 — Run Entrypoint
+- Follow `.spec_agent/prompts/entrypoint.md` as the single routing source.
+- Select task mode (`bugfix`, `development`, `refactor`, `tests`, `analysis`) via task intent.
 
-STEP 2 — Build Specification Tree
-- Recursively follow all spec links.
-- Build a full dependency tree of affected components.
-- Detect and prevent circular dependencies.
+STEP 2 — Create/Update spec_changes File
+- Create or update:
+  `/spec_changes/YYYYMMDD_HHMM_<mode>_<short_description>.md`
+- Record selected mode, scope, and execution steps.
 
-STEP 3 — Plan Changes
-- Create a change plan in a new Markdown file under:
-  /spec_changes/YYYYMMDD_HHMM_<short_description>.md
+STEP 3 — Execute Mode Workflow
+- `bugfix`: minimal targeted diagnosis and fix; no heavy planning unless needed.
+- `development`: explicit implementation plan + iterative execution.
+- `refactor`: pre-refactor analysis + iterative safe refactoring.
+- `tests`: test-gap analysis + test plan + test implementation.
+- `analysis`: read/analyze only; no code/spec changes.
 
-The plan MUST include:
-- Affected specifications
-- A checklist of required spec changes
-- A checklist of required code changes
-- Explicit ordering of steps
-
-STEP 4 — Apply Changes (only on explicit command)
-For each step:
-1. Update the specification first
-2. Then update the Go code
-3. Mark the step as completed in the change plan
-
-STEP 5 — Verification (mandatory)
-- After implementation, run project linters.
-- After implementation, run project tests.
-- Record verification results in the task report (what was run and whether it passed).
+STEP 4 — Verification and Report
+- Run mode-relevant checks (linters/tests where applicable).
+- Record what was run and pass/fail status in `spec_changes`.
 
 --------------------------------
 SPECIFICATION RULES
@@ -100,6 +95,7 @@ LANGUAGE POLICY
 --------------------------------
 
 All specification files (*.md) MUST be written in Russian.
+Spec content/output language = Russian.
 
 - Business logic, rules, and flows are described in Russian.
 - Specifications are considered business documentation.

@@ -1,0 +1,45 @@
+title: "Task Mode: tests"
+purpose: Add, fix, or improve tests as the primary objective.
+output_file: ../../prompts/modes/tests.md
+persona:
+  - The agent focuses on coverage quality and test reliability.
+  - The agent maps tests to specification rules and behavior.
+workflow_steps:
+  - name: Coverage Analysis
+    steps:
+      - Identify coverage gap.
+      - Map gap to specification rule or expected behavior.
+  - name: Test Planning
+    steps:
+      - Define positive, negative, and edge test cases.
+      - Prioritize test cases in spec_changes.
+  - name: Test Implementation
+    steps:
+      - Add/fix tests according to plan.
+      - Apply minimal code changes only if tests expose a defect.
+  - name: Execution
+    steps:
+      - Run relevant tests.
+      - Record results in spec_changes.
+must_rules:
+  - Do not add tests without clear behavioral intent.
+  - Every new test must target a specific rule/scenario.
+  - Coverage outcomes and remaining gaps must be recorded in spec_changes.
+  - If specification text is updated, keep it in Russian.
+tool_policy:
+  allowed:
+    - Add unit/integration tests within scope.
+    - Minimal code fixes needed by failing tests.
+  forbidden:
+    - Large product changes disguised as test work.
+  notes:
+    - If tests expose a new task, record it as a follow-up risk/debt.
+output_contract:
+  required_sections:
+    - Coverage gap
+    - Test plan
+    - Added/updated tests
+    - Test results
+    - spec_changes file
+  rules:
+    - Report must show which risk is closed by tests.

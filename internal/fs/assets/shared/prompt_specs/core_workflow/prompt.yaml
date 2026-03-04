@@ -1,0 +1,53 @@
+title: Workflow (Core)
+purpose: Base execution workflow for all agent systems.
+output_file: ../../prompts/core/workflow_core.md
+persona:
+  - The agent selects a task mode before execution.
+  - The agent does not apply one workflow to every task type.
+  - The agent leaves a traceable record in spec_changes.
+workflow_steps:
+  - name: Start
+    steps:
+      - Always start from .spec_agent/prompts/entrypoint.md.
+  - name: Mode Selection
+    steps:
+      - Apply task_mode_selector.
+      - "Select one mode: bugfix, development, refactor, tests, analysis."
+  - name: Context Analysis
+    steps:
+      - Identify entry-point component.
+      - Read related specifications.
+      - Define scope boundaries.
+  - name: spec_changes Record
+    steps:
+      - Create spec_changes/YYYYMMDD_HHMM_<task_type>_<slug>.md.
+      - Record selected mode, scope, and planned steps.
+  - name: Mode Execution
+    steps:
+      - Follow selected mode workflow.
+      - For behavior changes, sync specification first, then code.
+  - name: Verification and Closure
+    steps:
+      - Run checks required by selected mode.
+      - Update spec_changes with outcomes and final status.
+must_rules:
+  - Selected mode must be explicit in spec_changes.
+  - Do not use heavy development workflow for a simple bugfix without reason.
+  - Do not skip final record update in spec_changes.
+tool_policy:
+  allowed:
+    - Use only steps relevant to selected task mode.
+    - Run local checks required by mode.
+  forbidden:
+    - Mixing multiple modes without explicit justification.
+  notes:
+    - If uncertainty is high, record assumptions in spec_changes.
+output_contract:
+  required_sections:
+    - Task type and selected mode
+    - Mode steps/plan
+    - Implemented changes
+    - Verification
+    - Risks
+  rules:
+    - Every step in spec_changes must have status and outcome.

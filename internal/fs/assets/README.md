@@ -18,6 +18,29 @@
 - `go/prompts/base/*.md` — базовые инструкции для стандартного `spec-agent init`
 - `go/prompts/zenflow/*.md` — этапные инструкции для `--zenflow`
 
+### `shared/prompts/` — общий слой для любых AI-систем
+- `shared/prompts/entrypoint.md` — единая точка входа и порядок чтения инструкций
+- `shared/prompts/core/*.md` — единое ядро правил и workflow, независимое от платформы
+- `shared/prompts/modes/*.md` — workflow-режимы по типам задач:
+  - `bugfix.md`
+  - `development.md`
+  - `refactor.md`
+  - `tests.md`
+  - `analysis.md`
+
+Языковая политика:
+- `shared/prompts/core/*` и `shared/prompts/modes/*` пишутся на английском.
+- Спецификации рядом с кодом (`*.md`) и бизнес-описания пишутся на русском.
+
+### `shared/prompt_specs/` — машинно-читабельный источник истины
+- Каждый prompt хранится как `prompt.yaml` со структурой:
+  - `persona`
+  - `workflow_steps`
+  - `must_rules`
+  - `tool_policy`
+  - `output_contract`
+- Markdown в `shared/prompts/*` генерируется из этих YAML-файлов.
+
 ### `php/` — PHP-профиль
 Ресурсы для PHP-проектов:
 - `php/prompts/base/*.md` — базовые инструкции для `spec-agent init-php`
@@ -37,9 +60,24 @@
 ## Как использовать
 
 ### Настройка AI-агента
-1. Для Go: используйте `go/prompts/base/*.md`
-2. Для PHP: используйте `php/prompts/base/*.md`
-3. Для Zenflow-процессов используйте `*/prompts/zenflow/*.md` по этапам
+1. Используйте единый вход: `shared/prompts/entrypoint.md`
+2. Entry-point сам применит `core/*.md` и выберет нужный режим из `modes/*.md`
+3. Для Go: добавляйте `go/prompts/base/*.md`
+4. Для PHP: добавляйте `php/prompts/base/*.md`
+5. Для Zenflow-процессов используйте `*/prompts/zenflow/*.md` по этапам
+
+### Генерация markdown из prompt.yaml
+Для поддержки консистентности используйте генератор:
+
+```bash
+go run ./cmd/promptgen
+```
+
+Проверка, что markdown не устарел:
+
+```bash
+go run ./cmd/promptgen -check
+```
 
 ### Архитектурное правило слоёв (обязательно)
 - Сценарная бизнес-оркестрация (последовательность шагов, ветвления, принятие решений по сценарию) должна находиться в **usecase**.
