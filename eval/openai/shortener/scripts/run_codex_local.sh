@@ -177,6 +177,13 @@ bash "$REPO_ROOT/eval/openai/shortener/scripts/bootstrap_existing_specs.sh"
 echo "preparing eval-only runtime patch..."
 bash "$REPO_ROOT/eval/openai/shortener/scripts/disable_rabbitmq_for_eval.sh"
 
+echo "recording prepared baseline..."
+(
+  cd "$WORKSPACE"
+  git add -A
+  git commit -qm "prepared baseline with prompts/specs/eval patch"
+)
+
 run_prompt "mini_bugfix" "$REPO_ROOT/eval/openai/shortener/prompts/mini_bugfix.md"
 bash "$REPO_ROOT/eval/openai/shortener/scripts/verify_mini_bugfix.sh"
 

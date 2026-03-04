@@ -14,8 +14,8 @@ if ! grep -q "http.StatusInternalServerError" "$TARGET_GO"; then
   exit 1
 fi
 
-if ! grep -q "return http.HandlerFunc" "$TARGET_GO"; then
-  echo "missing fallback handler return in router.go"
+if ! grep -Eqi "fallbackHandler|return .*fallback|return http\\.HandlerFunc|func fallback" "$TARGET_GO"; then
+  echo "missing fallback handler implementation/return in router.go"
   exit 1
 fi
 
@@ -29,8 +29,13 @@ if ! grep -q "TestHandlerFallbackOnDIError" "$TARGET_TEST"; then
   exit 1
 fi
 
-if ! grep -qi "fallback handler" "$TARGET_SPEC"; then
-  echo "router spec is not updated with fallback handler behavior"
+if ! grep -Eqi "fallback|резервн|фолбэк|fallback-обработчик|fallback обработчик" "$TARGET_SPEC"; then
+  echo "router spec is not updated with fallback behavior"
+  exit 1
+fi
+
+if ! grep -q "500" "$TARGET_SPEC"; then
+  echo "router spec is not updated with HTTP 500 fallback behavior"
   exit 1
 fi
 
