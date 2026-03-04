@@ -8,22 +8,31 @@ mkdir -p "$ARTIFACT_DIR"
 
 SERVER_CONTAINER_NAME="eval-shortener-server"
 SERVER_IMAGE_NAME="eval-shortener-server:latest"
+SERVER_MODE="${SERVER_MODE:-docker}" # docker | process
+SERVER_PID_FILE="$ARTIFACT_DIR/server.pid"
+DB_HOST="${DB_HOST:-localhost}"
+RABBITMQ_HOST="${RABBITMQ_HOST:-localhost}"
+APP_HOST="${APP_HOST:-http://localhost:8080}"
 
 prepare_server_config() {
   mkdir -p "$WORKSPACE/cmd/server"
   cat > "$WORKSPACE/cmd/server/config.yaml" <<'YAML'
 db:
-  dsn: "postgresql://developer:developer@localhost:5432/gobase?sslmode=disable"
+  dsn: "__DB_DSN__"
   max_open_conns: 25
   max_idle_conns: 5
 
 app:
   run_addr: "0.0.0.0:8080"
-  shortener_host: "http://localhost:8080"
+  shortener_host: "__APP_HOST__"
 
 rabbitmq:
-  url: "amqp://guest:guest@localhost:5672/"
+  url: "amqp://guest:guest@__RABBITMQ_HOST__:5672/"
 YAML
+  local db_dsn="postgresql://developer:developer@${DB_HOST}:5432/gobase?sslmode=disable"
+  sed -i "s|__DB_DSN__|$db_dsn|g" "$WORKSPACE/cmd/server/config.yaml"
+  sed -i "s|__APP_HOST__|$APP_HOST|g" "$WORKSPACE/cmd/server/config.yaml"
+  sed -i "s|__RABBITMQ_HOST__|$RABBITMQ_HOST|g" "$WORKSPACE/cmd/server/config.yaml"
 }
 
 install_migrate_if_needed() {
@@ -36,9 +45,10 @@ install_migrate_if_needed() {
 
 apply_migrations() {
   install_migrate_if_needed
+  local db_dsn="postgresql://developer:developer@${DB_HOST}:5432/gobase?sslmode=disable"
   (
     cd "$WORKSPACE"
-    make migrate-up
+    make migrate-up DB_DSN="$db_dsn"
   )
 }
 
@@ -75,6 +85,41 @@ stop_server_container() {
   fi
 }
 
+start_server_process() {
+  stop_server_process || true
+  (
+    cd "$WORKSPACE"
+    nohup go run ./cmd/server/main.go ./cmd/server/config.yaml >"$ARTIFACT_DIR/server.log" 2>&1 &
+    echo $! >"$SERVER_PID_FILE"
+  )
+}
+
+stop_server_process() {
+  if [ -f "$SERVER_PID_FILE" ]; then
+    pid="$(cat "$SERVER_PID_FILE" || true)"
+    if [ -n "${pid:-}" ] && kill -0 "$pid" >/dev/null 2>&1; then
+      kill "$pid" >/dev/null 2>&1 || true
+      sleep 1
+      kill -9 "$pid" >/dev/null 2>&1 || true
+    fi
+    rm -f "$SERVER_PID_FILE"
+  fi
+}
+
+start_server() {
+  if [ "$SERVER_MODE" = "process" ]; then
+    start_server_process
+    return
+  fi
+  build_server_image
+  start_server_container
+}
+
+stop_server() {
+  stop_server_process || true
+  stop_server_container || true
+}
+
 wait_http_ready() {
   local retries=40
   local i
@@ -85,7 +130,9 @@ wait_http_ready() {
     sleep 1
   done
 
-  docker logs "$SERVER_CONTAINER_NAME" > "$ARTIFACT_DIR/server.log" 2>&1 || true
+  if [ "$SERVER_MODE" = "docker" ]; then
+    docker logs "$SERVER_CONTAINER_NAME" > "$ARTIFACT_DIR/server.log" 2>&1 || true
+  fi
   echo "server did not become ready, logs saved to $ARTIFACT_DIR/server.log"
   return 1
 }

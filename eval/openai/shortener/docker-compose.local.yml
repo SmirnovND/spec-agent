@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: gobase
+      POSTGRES_USER: developer
+      POSTGRES_PASSWORD: developer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U developer -d gobase"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  runner:
+    build:
+      context: ../../..
+      dockerfile: eval/openai/shortener/Dockerfile.runner
+    environment:
+      CODEX_MODEL: ${CODEX_MODEL:-gpt-5-codex}
+      REPO_ROOT: /work
+      WORKSPACE: /work/eval/fixtures/draft/repo
+      DB_HOST: postgres
+      RABBITMQ_HOST: rabbitmq
+      APP_HOST: http://localhost:8080
+    volumes:
+      - ../../..:/work
+      - ${HOME}/.codex:/root/.codex
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy

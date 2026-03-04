@@ -80,6 +80,21 @@ Verification scripts:
 - `eval/openai/shortener/scripts/verify_step1.sh`
 - `eval/openai/shortener/scripts/verify_step2.sh`
 
+Local isolated run (Codex CLI in container):
+- run `codex login` once on host machine
+- `make eval-openai-shortener-local`
+
+This target:
+- syncs pinned `draft` fixture
+- starts `postgres` + `rabbitmq` + `runner` via `docker compose`
+- runs `codex exec` for step1 and step2 in the `runner` container
+- executes runtime verification scripts after each step
+- writes artifacts to `eval/fixtures/draft/repo/.eval/openai/`
+
+Auth mode:
+- local runner uses mounted host profile `${HOME}/.codex -> /root/.codex`
+- no `OPENAI_API_KEY` export required for local run
+
 ## Draft Fixture (optional)
 
 To sync external fixture repo (`SmirnovND/draft`):

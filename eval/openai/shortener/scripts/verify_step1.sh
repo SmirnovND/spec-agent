@@ -8,9 +8,8 @@ source "$SCRIPT_DIR/common.sh"
 
 prepare_server_config
 apply_migrations
-build_server_image
-start_server_container
-trap 'stop_server_container' EXIT
+start_server
+trap 'stop_server' EXIT
 wait_http_ready
 
 mkdir -p "$WORKSPACE/.eval/openai"
@@ -34,7 +33,7 @@ original_url="$(extract_json_field '.original_url' "$CREATE_RESPONSE")"
 short_url="$(extract_json_field '.short_url' "$CREATE_RESPONSE")"
 
 assert_equals "https://example.com/products/123?utm=abc" "$original_url" "original_url mismatch"
-assert_prefix "http://localhost:8080/" "$short_url" "short_url host mismatch"
+assert_prefix "${APP_HOST}/" "$short_url" "short_url host mismatch"
 
 redirect_headers="$WORKSPACE/.eval/openai/step1_redirect_headers.txt"
 status_code="$(curl -sS -o /dev/null -D "$redirect_headers" -w '%{http_code}' "$short_url")"

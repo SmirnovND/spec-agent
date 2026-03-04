@@ -1,0 +1,17 @@
+FROM golang:1.24-bookworm
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      git \
+      jq \
+      make \
+      nodejs \
+      npm \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN npm install -g @openai/codex
+
+WORKDIR /work
+ENTRYPOINT ["/bin/bash", "/work/eval/openai/shortener/scripts/run_codex_local.sh"]

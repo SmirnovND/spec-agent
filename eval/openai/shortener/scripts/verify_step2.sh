@@ -8,9 +8,8 @@ source "$SCRIPT_DIR/common.sh"
 
 prepare_server_config
 apply_migrations
-build_server_image
-start_server_container
-trap 'stop_server_container' EXIT
+start_server
+trap 'stop_server' EXIT
 wait_http_ready
 
 mkdir -p "$WORKSPACE/.eval/openai"
@@ -32,7 +31,7 @@ curl -fsS \
   > "$CREATE_RESPONSE"
 
 short_url="$(extract_json_field '.short_url' "$CREATE_RESPONSE")"
-assert_prefix "http://localhost:8080/" "$short_url" "short_url host mismatch"
+assert_prefix "${APP_HOST}/" "$short_url" "short_url host mismatch"
 
 (
   cd "$WORKSPACE"
