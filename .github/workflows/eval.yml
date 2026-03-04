@@ -32,6 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: golang:1.24
+    env:
+      GOFLAGS: -buildvcs=false
     steps:
       - uses: actions/checkout@v4
 
@@ -50,7 +52,7 @@ jobs:
       - name: Build spec-agent binary
         run: |
           mkdir -p bin
-          go build -o ./bin/spec-agent ./cmd/spec-agent
+          go build -buildvcs=false -o ./bin/spec-agent ./cmd/spec-agent
 
       - name: Run quick eval
         run: |
@@ -68,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: golang:1.24
+    env:
+      GOFLAGS: -buildvcs=false
     steps:
       - uses: actions/checkout@v4
 
@@ -86,7 +90,7 @@ jobs:
       - name: Build spec-agent binary
         run: |
           mkdir -p bin
-          go build -o ./bin/spec-agent ./cmd/spec-agent
+          go build -buildvcs=false -o ./bin/spec-agent ./cmd/spec-agent
 
       - name: Run full eval
         run: |

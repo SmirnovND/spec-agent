@@ -6,7 +6,7 @@ set -euo pipefail
 SPEC_AGENT_BIN="${SPEC_AGENT_BIN:-$REPO_ROOT/bin/spec-agent}"
 if [ ! -x "$SPEC_AGENT_BIN" ]; then
   mkdir -p "$REPO_ROOT/bin"
-  GOCACHE="${GOCACHE:-$REPO_ROOT/.gocache}" go build -o "$SPEC_AGENT_BIN" "$REPO_ROOT/cmd/spec-agent"
+  GOCACHE="${GOCACHE:-$REPO_ROOT/.gocache}" go build -buildvcs=false -o "$SPEC_AGENT_BIN" "$REPO_ROOT/cmd/spec-agent"
 fi
 
 (
