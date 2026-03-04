@@ -61,6 +61,21 @@ func main() {
 		res.SpecRuleViolationsTotal,
 	)
 	fmt.Printf("result_json=%s\n", outputPath)
+	for _, task := range res.Tasks {
+		if task.GatingPass {
+			continue
+		}
+		fmt.Printf("task=%s gating_pass=false\n", task.TaskID)
+		if strings.TrimSpace(task.RunError) != "" {
+			fmt.Printf("run_error:\n%s\n", task.RunError)
+		}
+		if len(task.TestFailures) > 0 {
+			fmt.Printf("test_failures (%d):\n", len(task.TestFailures))
+			for i, failure := range task.TestFailures {
+				fmt.Printf("[%d]\n%s\n", i+1, failure)
+			}
+		}
+	}
 
 	if !res.GatingPass {
 		os.Exit(2)

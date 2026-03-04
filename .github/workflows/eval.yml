@@ -58,6 +58,17 @@ jobs:
         run: |
           go run ./cmd/eval-runner -tasks bootstrap,bugfix,development
 
+      - name: Print eval result JSON
+        if: always()
+        run: |
+          latest="$(ls -1t eval/results/*.json 2>/dev/null | head -n1 || true)"
+          if [ -n "$latest" ] && [ -f "$latest" ]; then
+            echo "latest_result=$latest"
+            cat "$latest"
+          else
+            echo "No eval result JSON found"
+          fi
+
       - name: Upload eval artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -95,6 +106,17 @@ jobs:
       - name: Run full eval
         run: |
           go run ./cmd/eval-runner
+
+      - name: Print eval result JSON
+        if: always()
+        run: |
+          latest="$(ls -1t eval/results/*.json 2>/dev/null | head -n1 || true)"
+          if [ -n "$latest" ] && [ -f "$latest" ]; then
+            echo "latest_result=$latest"
+            cat "$latest"
+          else
+            echo "No eval result JSON found"
+          fi
 
       - name: Upload eval artifacts
         if: always()

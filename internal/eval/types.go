@@ -45,6 +45,7 @@ type TaskResult struct {
 	TestPassRate        float64   `json:"test_pass_rate"`
 	TestsPassed         int       `json:"tests_passed"`
 	TestsTotal          int       `json:"tests_total"`
+	TestFailures        []string  `json:"test_failures,omitempty"`
 	SpecRuleViolations  int       `json:"spec_rule_violations"`
 	GatingPass          bool      `json:"gating_pass"`
 }

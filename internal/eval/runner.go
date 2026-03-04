@@ -115,7 +115,7 @@ func runTask(opts RunOptions, taskDir string, thresholds Thresholds) (TaskResult
 	if totalChecks > 0 {
 		completeness = float64(completedChecks) / float64(totalChecks)
 	}
-	passedTests, totalTests := runTestCommands(workspace, cfg.TestCommands)
+	passedTests, totalTests, testFailures := runTestCommands(workspace, cfg.TestCommands)
 	testPassRate := 1.0
 	if totalTests > 0 {
 		testPassRate = float64(passedTests) / float64(totalTests)
@@ -139,6 +139,7 @@ func runTask(opts RunOptions, taskDir string, thresholds Thresholds) (TaskResult
 		TestPassRate:        testPassRate,
 		TestsPassed:         passedTests,
 		TestsTotal:          totalTests,
+		TestFailures:        testFailures,
 		SpecRuleViolations:  specViolations,
 	}
 	res.GatingPass = evaluateTaskGating(res, thresholds)
@@ -402,23 +403,33 @@ func checkpointPasses(workspace string, c Checkpoint) bool {
 	}
 }
 
-func runTestCommands(workspace string, cmds []string) (int, int) {
+func runTestCommands(workspace string, cmds []string) (int, int, []string) {
 	if len(cmds) == 0 {
-		return 0, 0
+		return 0, 0, nil
 	}
 	passed := 0
+	failures := make([]string, 0)
+	total := 0
 	for _, c := range cmds {
 		c = strings.TrimSpace(c)
 		if c == "" {
 			continue
 		}
+		total++
 		cmd := exec.Command("sh", "-lc", c)
 		cmd.Dir = workspace
-		if err := cmd.Run(); err == nil {
+		out, err := cmd.CombinedOutput()
+		if err == nil {
 			passed++
+			continue
 		}
+		details := strings.TrimSpace(string(out))
+		if details == "" {
+			details = "(no output)"
+		}
+		failures = append(failures, fmt.Sprintf("command: %s\nerror: %v\noutput:\n%s", c, err, details))
 	}
-	return passed, len(cmds)
+	return passed, total, failures
 }
 
 func countSpecRuleViolations(workspace string, changed []string) int {
