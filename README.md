@@ -205,13 +205,16 @@ spec-agent/
 │   ├── config/
 │   │   └── config.go         # Загрузка .spec_agent/config.yaml
 │   └── fs/
-│       └── init.go           # Инициализация проекта
+│       ├── init.go           # Инициализация проекта
+│       └── assets/           # Embedded assets для init/init-php
+│           ├── examples/
+│           ├── go/prompts/
+│           ├── php/prompts/
+│           └── shared/
+│               ├── prompts/      # entrypoint + core + task modes
+│               └── prompt_specs/ # Машинно-читабельные prompt.yaml
 ├── assets/
-│   ├── examples/             # Примеры спецификаций
-│   ├── shared/prompts/       # Общий слой: entrypoint + core + task modes
-│   ├── shared/prompt_specs/  # Машинно-читабельные prompt.yaml
-│   ├── go/prompts/           # Go-профиль: base + zenflow
-│   └── php/prompts/          # PHP-профиль: base + zenflow
+│   └── examples/             # Публичные примеры спецификаций
 ├── go.mod
 ├── go.sum
 └── README.md
@@ -224,25 +227,61 @@ spec-agent/
 
 ## Формат спецификаций
 
-Спецификации — это Markdown-файлы со следующей структурой:
+Актуальный формат спецификаций определяется файлом:
+- `./.spec_agent/prompts/base/spec_rules.md` (после `spec-agent init`)
 
+Ключевые требования:
+- У каждого исходника должен быть colocated spec-файл с тем же именем (`foo.go` + `foo.md`).
+- В начале спеки обязателен marker-блок `SPEC:*`.
+- Обязательные секции в строгом порядке:
+  1. `# Title`
+  2. `## Responsibility`
+  3. `## Inputs`
+  4. `## Outputs`
+  5. `## Business Logic`
+  6. `## Flow`
+  7. `## Links`
+  8. `## Dependencies`
+  9. `## Errors`
+  10. `## Notes` (опционально)
+- `## Links` содержит только явные связи формата:
+  - `- <relation>: [Name](../path/spec.md#anchor)`
+- Текст спецификаций должен быть на русском.
+
+Канонический skeleton:
 ```markdown
-# Название компонента
+<!-- SPEC:START -->
+<!-- SPEC:FILE=true -->
+<!-- SPEC:ID=path/to/file_without_ext -->
+<!-- SPEC:KIND=controller|command|usecase|service|repository|other -->
+<!-- SPEC:MENU=true|false -->
+<!-- SPEC:END -->
 
-## Контекст
-Описание задачи, роли в системе, исторический контекст.
+# <Название>
 
-## Ответственность
-Что этот компонент отвечает за реализацию.
+## Responsibility
+...
 
-## Контракты
-Интерфейсы, структуры данных, API.
+## Inputs
+...
 
-## Ограничения
-Constraint'ы, assumptions, limitations.
+## Outputs
+...
 
-## Зависимости
-- Ссылка на другую спецификацию: [Component Name](../other/spec.md)
+## Business Logic
+1. ...
+
+## Flow
+1. ...
+
+## Links
+- uses: [Name](../path/spec.md#anchor)
+
+## Dependencies
+- [Name](../path/spec.md)
+
+## Errors
+- ...
 ```
 
 ## Конфигурация
@@ -263,6 +302,13 @@ exclude:
 ### Пример спецификации usecase
 
 ```markdown
+<!-- SPEC:START -->
+<!-- SPEC:FILE=true -->
+<!-- SPEC:ID=usecases/create_user -->
+<!-- SPEC:KIND=usecase -->
+<!-- SPEC:MENU=false -->
+<!-- SPEC:END -->
+
 # CreateUserUseCase
 
 ## Responsibility
@@ -276,17 +322,23 @@ exclude:
 ## Outputs
 - Созданный объект User с ID
 
-## Business Rules
+## Business Logic
 1. Email должен быть уникальным
 2. Пароль должен быть минимум 8 символов
 3. Новый пользователь создается в неактивном состоянии
 
 ## Flow
 1. Валидирует входные данные
-2. Проверяет уникальность email → calls: [UserRepository](../repositories/user_repository.md)
-3. Хеширует пароль → calls: [CryptoService](../services/crypto_service.md)
-4. Создает запись в БД → writes: [UserRepository](../repositories/user_repository.md)
-5. Отправляет письмо подтверждения → calls: [EmailService](../services/email_service.md)
+2. Проверяет уникальность email.
+3. Хеширует пароль.
+4. Создает запись пользователя.
+5. Отправляет письмо подтверждения.
+
+## Links
+- calls: [UserRepository](../repositories/user_repository.md#get_by_email)
+- calls: [CryptoService](../services/crypto_service.md#hash)
+- writes: [UserRepository](../repositories/user_repository.md#create)
+- calls: [EmailService](../services/email_service.md#send_confirmation)
 
 ## Dependencies
 - [UserRepository](../repositories/user_repository.md)
@@ -297,33 +349,6 @@ exclude:
 - ErrEmailExists — email уже зарегистрирован
 - ErrInvalidEmail — некорректный формат
 - ErrWeakPassword — слабый пароль
-```
-
-### Пример спецификации сервиса
-
-```markdown
-# UserRepository
-
-## Responsibility
-Управляет доступом к данным пользователей в базе данных.
-
-## Inputs
-- User object for create/update
-- User ID for read/delete
-- Filter parameters for list
-
-## Outputs
-- User object(s) or error
-
-## Dependencies
-- [Database Driver](../db/connection.md)
-
-## Contract
-- Create(ctx, user) → (userWithID, error)
-- GetByID(ctx, id) → (user, error)
-- GetByEmail(ctx, email) → (user, error)
-- Update(ctx, user) → error
-- Delete(ctx, id) → error
 ```
 
 ## Разработка

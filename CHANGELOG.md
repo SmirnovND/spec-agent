@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.0.1 - 2026-03-04
+
+### Documentation
+
+- Synchronized main `README.md` with actual v2 architecture:
+  - corrected project tree paths to `internal/fs/assets/shared/*`
+  - updated specification format section to current `spec_rules`
+  - refreshed usecase example to match marker/sections/links requirements
+  - removed outdated non-canonical service example
+
 ## v2.0.0 - 2026-03-04
 
 ### Breaking Changes
