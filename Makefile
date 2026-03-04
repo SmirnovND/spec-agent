@@ -10,6 +10,7 @@ eval-sync-draft:
 	bash eval/scripts/fetch_draft_fixture.sh
 
 eval-openai-shortener-local: eval-sync-draft
+	@mkdir -p eval/results/openai-shortener
 	docker compose -f eval/openai/shortener/docker-compose.local.yml up --build --abort-on-container-exit --exit-code-from runner
 
 eval-openai-shortener-local-down:

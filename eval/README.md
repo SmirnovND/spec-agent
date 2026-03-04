@@ -87,13 +87,22 @@ Local isolated run (Codex CLI in container):
 This target:
 - syncs pinned `draft` fixture
 - starts `postgres` + `rabbitmq` + `runner` via `docker compose`
-- runs `codex exec` for step1 and step2 in the `runner` container
+- runs `codex exec` for step1 and step2 in an ephemeral workspace inside `runner`
 - executes runtime verification scripts after each step
-- writes artifacts to `eval/fixtures/draft/repo/.eval/openai/`
+- writes artifacts to `eval/results/openai-shortener/<run_id>/`
 
 Auth mode:
 - local runner uses mounted host profile `${HOME}/.codex -> /root/.codex`
 - no `OPENAI_API_KEY` export required for local run
+
+Artifact export policy:
+- only compact artifacts are exported (`summary.json`, reports, verify results, codex logs)
+- only allowed code diff is exported as `changes.patch` for paths:
+  - `internal/**`
+  - `cmd/**`
+  - `migrations/**`
+  - `spec_changes/**`
+- full workspace is temporary and removed with container lifecycle
 
 ## Draft Fixture (optional)
 

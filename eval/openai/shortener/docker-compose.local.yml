@@ -26,12 +26,15 @@ services:
     environment:
       CODEX_MODEL: ${CODEX_MODEL:-gpt-5-codex}
       REPO_ROOT: /work
-      WORKSPACE: /work/eval/fixtures/draft/repo
+      SOURCE_FIXTURE: /work/eval/fixtures/draft/repo
+      RUN_ROOT: /tmp/spec-agent-openai-run
+      EXPORT_DIR: /out
       DB_HOST: postgres
       RABBITMQ_HOST: rabbitmq
       APP_HOST: http://localhost:8080
     volumes:
-      - ../../..:/work
+      - ../../..:/work:ro
+      - ../../../eval/results/openai-shortener:/out
       - ${HOME}/.codex:/root/.codex
     depends_on:
       postgres:
