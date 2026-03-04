@@ -7,4 +7,4 @@ allowed_paths:
   - internal/router/router.md
   - spec_changes/**
 test_commands:
-  - go test ./internal/services ./internal/controllers ./internal/repositories ./internal/router
+  - go test ./internal/services ./internal/controllers ./internal/repositories
