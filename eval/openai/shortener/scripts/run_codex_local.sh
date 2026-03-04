@@ -6,6 +6,8 @@ SOURCE_FIXTURE="${SOURCE_FIXTURE:-$REPO_ROOT/eval/fixtures/draft/repo}"
 RUN_ROOT="${RUN_ROOT:-/tmp/spec-agent-openai-run}"
 WORKSPACE="${WORKSPACE:-$RUN_ROOT/workspace}"
 MODEL="${CODEX_MODEL:-gpt-5-codex}"
+REASONING_EFFORT="${CODEX_REASONING_EFFORT:-low}"
+VERBOSE="${CODEX_VERBOSE:-0}"
 EXPORT_DIR="${EXPORT_DIR:-/out}"
 DB_HOST="${DB_HOST:-postgres}"
 RABBITMQ_HOST="${RABBITMQ_HOST:-rabbitmq}"
@@ -53,14 +55,37 @@ run_prompt() {
   local name="$1"
   local prompt_file="$2"
   local log_file="$WORKSPACE/.eval/openai/artifacts/${name}_codex.log"
+  local last_msg_file="$WORKSPACE/.eval/openai/artifacts/${name}_last_message.md"
 
-  codex exec \
+  echo "running codex prompt: $name (model=$MODEL reasoning=$REASONING_EFFORT)"
+  if [ "$VERBOSE" = "1" ]; then
+    codex exec \
+      --cd "$WORKSPACE" \
+      --model "$MODEL" \
+      --full-auto \
+      --dangerously-bypass-approvals-and-sandbox \
+      --skip-git-repo-check \
+      --output-last-message "$last_msg_file" \
+      -c "model_reasoning_effort=\"$REASONING_EFFORT\"" \
+      - < "$prompt_file" | tee "$log_file"
+    return
+  fi
+
+  if ! codex exec \
     --cd "$WORKSPACE" \
     --model "$MODEL" \
     --full-auto \
     --dangerously-bypass-approvals-and-sandbox \
     --skip-git-repo-check \
-    - < "$prompt_file" | tee "$log_file"
+    --output-last-message "$last_msg_file" \
+    -c "model_reasoning_effort=\"$REASONING_EFFORT\"" \
+    - < "$prompt_file" >"$log_file" 2>&1; then
+    echo "codex prompt failed: $name"
+    echo "last log lines:"
+    tail -n 80 "$log_file" || true
+    return 1
+  fi
+  echo "codex prompt finished: $name"
 }
 
 export_artifacts() {

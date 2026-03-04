@@ -84,6 +84,11 @@ Local isolated run (Codex CLI in container):
 - run `codex login` once on host machine
 - `make eval-openai-shortener-local`
 
+Optional runtime knobs:
+- `CODEX_VERBOSE=1` - stream full Codex output to console (default `0`, quiet mode)
+- `CODEX_REASONING_EFFORT=low|medium|high` - speed/quality tradeoff (default `low`)
+- `CODEX_MODEL=...` - override model
+
 This target:
 - syncs pinned `draft` fixture
 - starts `postgres` + `rabbitmq` + `runner` via `docker compose`
