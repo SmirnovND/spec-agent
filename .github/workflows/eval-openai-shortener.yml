@@ -1,0 +1,96 @@
+name: Eval OpenAI Shortener
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: OpenAI model for codex-action
+        required: false
+        default: gpt-5-codex
+
+jobs:
+  shortener:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: gobase
+          POSTGRES_USER: developer
+          POSTGRES_PASSWORD: developer
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U developer -d gobase"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      rabbitmq:
+        image: rabbitmq:3-management-alpine
+        ports:
+          - 5672:5672
+          - 15672:15672
+        options: >-
+          --health-cmd="rabbitmq-diagnostics -q check_running"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: Sync draft fixture
+        run: |
+          bash eval/scripts/fetch_draft_fixture.sh
+
+      - name: Wait for services
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U developer -d gobase && break
+            sleep 1
+          done
+
+      - name: Run OpenAI agent step1
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI }}
+          model: ${{ github.event.inputs.model || 'gpt-5-codex' }}
+          working-directory: eval/fixtures/draft/repo
+          prompt-file: eval/openai/shortener/prompts/step1.md
+
+      - name: Verify step1
+        env:
+          WORKSPACE: ${{ github.workspace }}/eval/fixtures/draft/repo
+        run: |
+          bash eval/openai/shortener/scripts/verify_step1.sh
+
+      - name: Run OpenAI agent step2
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI }}
+          model: ${{ github.event.inputs.model || 'gpt-5-codex' }}
+          working-directory: eval/fixtures/draft/repo
+          prompt-file: eval/openai/shortener/prompts/step2.md
+
+      - name: Verify step2
+        env:
+          WORKSPACE: ${{ github.workspace }}/eval/fixtures/draft/repo
+        run: |
+          bash eval/openai/shortener/scripts/verify_step2.sh
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-openai-shortener-${{ github.run_id }}
+          path: |
+            eval/fixtures/draft/repo/.eval/openai/**

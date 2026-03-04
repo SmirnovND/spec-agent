@@ -55,6 +55,31 @@ Behavior:
 - JSON outputs uploaded as artifacts
 - jobs run in short-lived container (`golang:1.24`) and are discarded after completion
 
+## OpenAI Agent Eval (Shortener Scenario)
+
+Workflow:
+- `.github/workflows/eval-openai-shortener.yml`
+
+What it does:
+- syncs pinned `draft` fixture
+- runs OpenAI coding agent (via `openai/codex-action`) with task #1 prompt
+- verifies API behavior by running service in Docker container and calling HTTP endpoints
+- runs OpenAI coding agent with task #2 prompt
+- verifies expiration + cleanup-cron behavior
+- uploads run artifacts from `eval/fixtures/draft/repo/.eval/openai/`
+
+Requirements:
+- GitHub repository secret `OPENAI` must be configured
+- run workflow manually via `workflow_dispatch`
+
+Prompt files:
+- `eval/openai/shortener/prompts/step1.md`
+- `eval/openai/shortener/prompts/step2.md`
+
+Verification scripts:
+- `eval/openai/shortener/scripts/verify_step1.sh`
+- `eval/openai/shortener/scripts/verify_step2.sh`
+
 ## Draft Fixture (optional)
 
 To sync external fixture repo (`SmirnovND/draft`):
