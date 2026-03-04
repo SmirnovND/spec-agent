@@ -26,16 +26,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-      rabbitmq:
-        image: rabbitmq:3-management-alpine
-        ports:
-          - 5672:5672
-          - 15672:15672
-        options: >-
-          --health-cmd="rabbitmq-diagnostics -q check_running"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
 
     steps:
       - uses: actions/checkout@v4
@@ -60,33 +50,28 @@ jobs:
             sleep 1
           done
 
-      - name: Run OpenAI agent step1
-        uses: openai/codex-action@v1
-        with:
-          openai-api-key: ${{ secrets.OPENAI }}
-          model: ${{ github.event.inputs.model || 'gpt-5-codex' }}
-          working-directory: eval/fixtures/draft/repo
-          prompt-file: eval/openai/shortener/prompts/step1.md
-
-      - name: Verify step1
+      - name: Bootstrap prompts/specs
         env:
           WORKSPACE: ${{ github.workspace }}/eval/fixtures/draft/repo
         run: |
-          bash eval/openai/shortener/scripts/verify_step1.sh
+          go build -buildvcs=false -o ./bin/spec-agent ./cmd/spec-agent
+          (cd "$WORKSPACE" && "$GITHUB_WORKSPACE/bin/spec-agent" init >/dev/null)
+          bash eval/openai/shortener/scripts/bootstrap_existing_specs.sh
+          bash eval/openai/shortener/scripts/disable_rabbitmq_for_eval.sh
 
-      - name: Run OpenAI agent step2
+      - name: Run OpenAI agent mini bugfix
         uses: openai/codex-action@v1
         with:
-          openai-api-key: ${{ secrets.OPENAI }}
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           model: ${{ github.event.inputs.model || 'gpt-5-codex' }}
           working-directory: eval/fixtures/draft/repo
-          prompt-file: eval/openai/shortener/prompts/step2.md
+          prompt-file: eval/openai/shortener/prompts/mini_bugfix.md
 
-      - name: Verify step2
+      - name: Verify mini bugfix
         env:
           WORKSPACE: ${{ github.workspace }}/eval/fixtures/draft/repo
         run: |
-          bash eval/openai/shortener/scripts/verify_step2.sh
+          bash eval/openai/shortener/scripts/verify_mini_bugfix.sh
 
       - name: Upload artifacts
         if: always()

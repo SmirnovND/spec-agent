@@ -4,3 +4,4 @@
 /bin/
 /eval/fixtures/draft/repo/
 /eval/results/*.json
+/eval/results/openai-shortener/

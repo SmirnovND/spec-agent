@@ -39,8 +39,9 @@ install_migrate_if_needed() {
   if command -v migrate >/dev/null 2>&1; then
     return
   fi
-  GOBIN="${GOBIN:-$HOME/go/bin}" go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.0
-  export PATH="$GOBIN:$PATH"
+  local gobin="${GOBIN:-$HOME/go/bin}"
+  GOBIN="$gobin" go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.0
+  export PATH="$gobin:$PATH"
 }
 
 apply_migrations() {
@@ -80,6 +81,9 @@ start_server_container() {
 }
 
 stop_server_container() {
+  if ! command -v docker >/dev/null 2>&1; then
+    return
+  fi
   if docker ps -a --format '{{.Names}}' | grep -q "^${SERVER_CONTAINER_NAME}$"; then
     docker rm -f "$SERVER_CONTAINER_NAME" >/dev/null 2>&1 || true
   fi
@@ -116,6 +120,10 @@ start_server() {
 }
 
 stop_server() {
+  if [ "$SERVER_MODE" = "process" ]; then
+    stop_server_process || true
+    return
+  fi
   stop_server_process || true
   stop_server_container || true
 }

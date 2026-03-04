@@ -8,10 +8,12 @@ WORKSPACE="${WORKSPACE:-$RUN_ROOT/workspace}"
 MODEL="${CODEX_MODEL:-gpt-5-codex}"
 REASONING_EFFORT="${CODEX_REASONING_EFFORT:-low}"
 VERBOSE="${CODEX_VERBOSE:-0}"
+CODEX_EXEC_MODE="${CODEX_EXEC_MODE:-unsafe}" # unsafe | full-auto
 EXPORT_DIR="${EXPORT_DIR:-/out}"
 DB_HOST="${DB_HOST:-postgres}"
-RABBITMQ_HOST="${RABBITMQ_HOST:-rabbitmq}"
+RABBITMQ_HOST="${RABBITMQ_HOST:-localhost}"
 APP_HOST="${APP_HOST:-http://localhost:8080}"
+SPEC_AGENT_BIN="${SPEC_AGENT_BIN:-$RUN_ROOT/bin/spec-agent}"
 
 if ! command -v codex >/dev/null 2>&1; then
   echo "codex CLI is not installed"
@@ -31,6 +33,14 @@ fi
 RUN_ID="$(date -u +%Y%m%d_%H%M%S)"
 DEST_DIR="$EXPORT_DIR/$RUN_ID"
 mkdir -p "$RUN_ROOT" "$DEST_DIR"
+
+build_spec_agent() {
+  mkdir -p "$(dirname "$SPEC_AGENT_BIN")"
+  (
+    cd "$REPO_ROOT"
+    GOCACHE="${GOCACHE:-$RUN_ROOT/.gocache}" go build -buildvcs=false -o "$SPEC_AGENT_BIN" ./cmd/spec-agent
+  )
+}
 
 prepare_workspace() {
   rm -rf "$WORKSPACE"
@@ -57,13 +67,17 @@ run_prompt() {
   local log_file="$WORKSPACE/.eval/openai/artifacts/${name}_codex.log"
   local last_msg_file="$WORKSPACE/.eval/openai/artifacts/${name}_last_message.md"
 
+  local mode_flag="--dangerously-bypass-approvals-and-sandbox"
+  if [ "$CODEX_EXEC_MODE" = "full-auto" ]; then
+    mode_flag="--full-auto"
+  fi
+
   echo "running codex prompt: $name (model=$MODEL reasoning=$REASONING_EFFORT)"
   if [ "$VERBOSE" = "1" ]; then
     codex exec \
       --cd "$WORKSPACE" \
       --model "$MODEL" \
-      --full-auto \
-      --dangerously-bypass-approvals-and-sandbox \
+      "$mode_flag" \
       --skip-git-repo-check \
       --output-last-message "$last_msg_file" \
       -c "model_reasoning_effort=\"$REASONING_EFFORT\"" \
@@ -74,8 +88,7 @@ run_prompt() {
   if ! codex exec \
     --cd "$WORKSPACE" \
     --model "$MODEL" \
-    --full-auto \
-    --dangerously-bypass-approvals-and-sandbox \
+    "$mode_flag" \
     --skip-git-repo-check \
     --output-last-message "$last_msg_file" \
     -c "model_reasoning_effort=\"$REASONING_EFFORT\"" \
@@ -98,7 +111,7 @@ export_artifacts() {
   local out_root="$WORKSPACE/.eval/openai"
   local out_artifacts="$out_root/artifacts"
 
-  for f in step1_report.json step2_report.json verify_step1_result.json verify_step2_result.json local_run_summary.json; do
+  for f in mini_bugfix_report.json verify_mini_bugfix_result.json local_run_summary.json; do
     if [ -f "$out_root/$f" ]; then
       cp "$out_root/$f" "$DEST_DIR/$f"
     fi
@@ -109,12 +122,17 @@ export_artifacts() {
     cp -R "$out_artifacts/." "$DEST_DIR/artifacts/"
   fi
 
-  (
-    cd "$WORKSPACE"
-    git add -A
-    git diff --binary --cached -- internal cmd migrations spec_changes > "$DEST_DIR/changes.patch" || true
-    git diff --name-only --cached -- internal cmd migrations spec_changes > "$DEST_DIR/changed_files.txt" || true
-  )
+  if [ -d "$WORKSPACE/.git" ]; then
+    (
+      cd "$WORKSPACE"
+      git add -A
+      git diff --binary --cached -- internal cmd migrations spec_changes > "$DEST_DIR/changes.patch" || true
+      git diff --name-only --cached -- internal cmd migrations spec_changes > "$DEST_DIR/changed_files.txt" || true
+    )
+  else
+    : > "$DEST_DIR/changes.patch"
+    : > "$DEST_DIR/changed_files.txt"
+  fi
 
   jq -n \
     --arg status "$status" \
@@ -144,11 +162,23 @@ export DB_HOST
 export RABBITMQ_HOST
 export APP_HOST
 
-run_prompt "step1" "$REPO_ROOT/eval/openai/shortener/prompts/step1.md"
-bash "$REPO_ROOT/eval/openai/shortener/scripts/verify_step1.sh"
+echo "building fresh spec-agent binary..."
+build_spec_agent
 
-run_prompt "step2" "$REPO_ROOT/eval/openai/shortener/prompts/step2.md"
-bash "$REPO_ROOT/eval/openai/shortener/scripts/verify_step2.sh"
+echo "injecting fresh prompts via spec-agent init..."
+(
+  cd "$WORKSPACE"
+  "$SPEC_AGENT_BIN" init >/dev/null
+)
+
+echo "bootstrapping baseline specs for existing code..."
+bash "$REPO_ROOT/eval/openai/shortener/scripts/bootstrap_existing_specs.sh"
+
+echo "preparing eval-only runtime patch..."
+bash "$REPO_ROOT/eval/openai/shortener/scripts/disable_rabbitmq_for_eval.sh"
+
+run_prompt "mini_bugfix" "$REPO_ROOT/eval/openai/shortener/prompts/mini_bugfix.md"
+bash "$REPO_ROOT/eval/openai/shortener/scripts/verify_mini_bugfix.sh"
 
 jq -n \
   --arg status "passed" \

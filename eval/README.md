@@ -55,30 +55,28 @@ Behavior:
 - JSON outputs uploaded as artifacts
 - jobs run in short-lived container (`golang:1.24`) and are discarded after completion
 
-## OpenAI Agent Eval (Shortener Scenario)
+## OpenAI Agent Eval (Mini Bugfix)
 
 Workflow:
 - `.github/workflows/eval-openai-shortener.yml`
 
 What it does:
 - syncs pinned `draft` fixture
-- runs OpenAI coding agent (via `openai/codex-action`) with task #1 prompt
-- verifies API behavior by running service in Docker container and calling HTTP endpoints
-- runs OpenAI coding agent with task #2 prompt
-- verifies expiration + cleanup-cron behavior
+- injects fresh prompts via `spec-agent init`
+- bootstraps baseline specs for existing modules
+- runs OpenAI coding agent on one small task (`mini_bugfix`)
+- verifies behavior, scope and required artifacts
 - uploads run artifacts from `eval/fixtures/draft/repo/.eval/openai/`
 
 Requirements:
-- GitHub repository secret `OPENAI` must be configured
+- GitHub repository secret `OPENAI_API_KEY` must be configured
 - run workflow manually via `workflow_dispatch`
 
 Prompt files:
-- `eval/openai/shortener/prompts/step1.md`
-- `eval/openai/shortener/prompts/step2.md`
+- `eval/openai/shortener/prompts/mini_bugfix.md`
 
 Verification scripts:
-- `eval/openai/shortener/scripts/verify_step1.sh`
-- `eval/openai/shortener/scripts/verify_step2.sh`
+- `eval/openai/shortener/scripts/verify_mini_bugfix.sh`
 
 Local isolated run (Codex CLI in container):
 - run `codex login` once on host machine
@@ -88,12 +86,17 @@ Optional runtime knobs:
 - `CODEX_VERBOSE=1` - stream full Codex output to console (default `0`, quiet mode)
 - `CODEX_REASONING_EFFORT=low|medium|high` - speed/quality tradeoff (default `low`)
 - `CODEX_MODEL=...` - override model
+- `CODEX_EXEC_MODE=unsafe|full-auto` - Codex execution mode (default `unsafe`)
 
 This target:
 - syncs pinned `draft` fixture
-- starts `postgres` + `rabbitmq` + `runner` via `docker compose`
-- runs `codex exec` for step1 and step2 in an ephemeral workspace inside `runner`
-- executes runtime verification scripts after each step
+- starts `postgres` + `runner` via `docker compose`
+- builds fresh `spec-agent` binary from current repository state
+- runs `spec-agent init` inside ephemeral workspace to inject latest prompt templates
+- bootstraps baseline specs for existing modules (router/healthcheck layers)
+- applies eval-only patch to disable mandatory RabbitMQ startup in `cmd/server/main.go`
+- runs `codex exec` for `mini_bugfix`
+- runs `verify_mini_bugfix` after agent completion
 - writes artifacts to `eval/results/openai-shortener/<run_id>/`
 
 Auth mode:
@@ -101,7 +104,7 @@ Auth mode:
 - no `OPENAI_API_KEY` export required for local run
 
 Artifact export policy:
-- only compact artifacts are exported (`summary.json`, reports, verify results, codex logs)
+- only compact artifacts are exported (`summary.json`, mini report, verify result, codex logs)
 - only allowed code diff is exported as `changes.patch` for paths:
   - `internal/**`
   - `cmd/**`

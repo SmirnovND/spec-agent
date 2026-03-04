@@ -11,14 +11,6 @@ services:
       timeout: 5s
       retries: 10
 
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
   runner:
     build:
       context: ../../..
@@ -30,7 +22,6 @@ services:
       RUN_ROOT: /tmp/spec-agent-openai-run
       EXPORT_DIR: /out
       DB_HOST: postgres
-      RABBITMQ_HOST: rabbitmq
       APP_HOST: http://localhost:8080
     volumes:
       - ../../..:/work:ro
@@ -38,6 +29,4 @@ services:
       - ${HOME}/.codex:/root/.codex
     depends_on:
       postgres:
-        condition: service_healthy
-      rabbitmq:
         condition: service_healthy
