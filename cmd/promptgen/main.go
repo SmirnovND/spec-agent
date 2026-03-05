@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/SmirnovND/spec-agent/internal/promptgen"
+	"github.com/SmirnovND/spec-agent/v2/internal/promptgen"
 )
 
 func main() {

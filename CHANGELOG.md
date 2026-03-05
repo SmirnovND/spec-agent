@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.0.2 - 2026-03-05
+
+### Fixes
+
+- Fixed Go module major versioning for `v2+`:
+  - changed module path to `github.com/SmirnovND/spec-agent/v2`
+  - updated all internal imports to use `/v2/...`
+
+### Documentation
+
+- Updated installation command in `README.md` to:
+  - `go install github.com/SmirnovND/spec-agent/v2/cmd/spec-agent@latest`
+
 ## v2.0.1 - 2026-03-04
 
 ### Documentation

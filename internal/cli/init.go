@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/SmirnovND/spec-agent/internal/fs"
+	"github.com/SmirnovND/spec-agent/v2/internal/fs"
 	"github.com/spf13/cobra"
 )
 

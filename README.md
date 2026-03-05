@@ -15,7 +15,7 @@ CLI инструмент для управления спецификациям�
 ## Установка
 
 ```bash
-go install github.com/SmirnovND/spec-agent/cmd/spec-agent@latest
+go install github.com/SmirnovND/spec-agent/v2/cmd/spec-agent@latest
 ```
 
 Проверка установки:

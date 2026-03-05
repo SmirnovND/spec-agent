@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/SmirnovND/spec-agent/internal/cli"
+	"github.com/SmirnovND/spec-agent/v2/internal/cli"
 )
 
 func main() {

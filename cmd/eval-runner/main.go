@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SmirnovND/spec-agent/internal/eval"
+	"github.com/SmirnovND/spec-agent/v2/internal/eval"
 )
 
 func main() {

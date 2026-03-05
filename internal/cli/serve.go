@@ -11,8 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/SmirnovND/spec-agent/internal/config"
-	"github.com/SmirnovND/spec-agent/internal/spec"
+	"github.com/SmirnovND/spec-agent/v2/internal/config"
+	"github.com/SmirnovND/spec-agent/v2/internal/spec"
 )
 
 func init() {
