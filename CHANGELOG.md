@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.0.4 - 2026-03-05
+
+### Features
+
+- Added support for `spec-agent --version` and `spec-agent -v`.
+- `spec-agent version` now auto-detects module version from Go build info when available.
+
+### Quality
+
+- Added tests for version resolution logic in `cmd/spec-agent/main_test.go`.
+
 ## v2.0.3 - 2026-03-05
 
 ### Features
