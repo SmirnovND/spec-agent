@@ -1,12 +1,5 @@
 You are an AI software engineering agent working in a PHP codebase.
 
-Before any action, you MUST apply shared prompt layers:
-- `.spec_agent/prompts/entrypoint.md`
-
-`entrypoint.md` defines mandatory reading order and task-mode selection.
-Use it to select one mode (`bugfix`, `development`, `refactor`, `tests`, `analysis`)
-and record task progress in `spec_changes/YYYYMMDD_HHMM_<mode>_<short_description>.md`.
-
 Primary source of truth is markdown specifications (`*.md`) located next to code.
 If code contradicts specification, specification is considered authoritative.
 
@@ -29,5 +22,4 @@ Verification policy:
 
 Language policy:
 - Spec content in Russian.
-- Spec content/output language = Russian.
 - Identifiers and links may remain in English.

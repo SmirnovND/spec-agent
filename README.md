@@ -12,15 +12,21 @@ CLI инструмент для управления спецификациям�
 
 Инструмент помогает проверить консистентность спецификаций и понять граф их зависимостей.
 
+## Статус релизов
+
+- Актуальная мажорная версия: `v3.x`.
+- Серия `v2.x` отозвана (withdrawn) и не поддерживается.
+- Теги `v2.x` сохранены в репозитории для исторической совместимости и аудита.
+
 ## Установка
 
 ```bash
-go install github.com/SmirnovND/spec-agent/v2/cmd/spec-agent@latest
+go install github.com/SmirnovND/spec-agent/v3/cmd/spec-agent@latest
 ```
 
 Проверка установки:
 ```bash
-spec-agent version
+spec-agent --help
 ```
 
 ## Быстрый старт
@@ -32,14 +38,12 @@ spec-agent init
 ```
 
 Создаст `.spec_agent/config.yaml` с путями к спецификациям.
-При повторном запуске `init` существующие файлы не перезаписываются: добавляются только отсутствующие.
 
 Для PHP-проекта:
 
 ```bash
 spec-agent init-php
 ```
-При повторном запуске `init-php` существующие файлы не перезаписываются: добавляются только отсутствующие.
 
 ### 2. Обновите конфиг
 
@@ -110,14 +114,6 @@ spec-agent init --zenflow
 Отличие источников промтов:
 - `init` берёт промты из `internal/fs/assets/go/prompts/base`
 - `init --zenflow` добавляет zenflow-набор из `internal/fs/assets/go/prompts/zenflow`
-- `init` также добавляет общий слой в `.spec_agent/prompts/`:
-  - `entrypoint.md`: единый вход и порядок чтения инструкций
-  - `core/*`: единый контракт, базовый workflow и task-mode selector
-  - `modes/*`: режимы по типу задачи (`bugfix`, `development`, `refactor`, `tests`, `analysis`)
-
-Языковая политика промптов:
-- `.spec_agent/prompts/core/*` и `.spec_agent/prompts/modes/*` — на английском.
-- Спецификации рядом с кодом (`*.md`) и бизнес-текст — на русском.
 
 Дополнительно создаётся файл:
 - `.zenflow/workflows/spec-agent-spec-driven.md` — custom workflow с шагами `Planning`, `Technical Specification`, `Specification Review`, `Implementation`, `Review & Wrap-Up`
@@ -138,7 +134,6 @@ spec-agent init-php --zenflow
 Создаётся отдельный workflow:
 - `.zenflow/workflows/spec-agent-php-spec-driven.md`
 - шаги ссылаются на `.spec_agent/php/prompts/zenflow/*.md`
-- общий слой `.spec_agent/prompts/entrypoint.md`, `.spec_agent/prompts/core` и `.spec_agent/prompts/modes` также создаётся
 
 ### Просмотр спецификаций в браузере
 
@@ -188,8 +183,6 @@ spec-agent graph
 spec-agent/
 ├── cmd/spec-agent/
 │   └── main.go               # Точка входа приложения
-├── cmd/promptgen/
-│   └── main.go               # Генерация markdown из prompt.yaml
 ├── internal/
 │   ├── cli/                  # Команды CLI (Cobra)
 │   │   ├── root.go           # Корневая команда
@@ -205,16 +198,11 @@ spec-agent/
 │   ├── config/
 │   │   └── config.go         # Загрузка .spec_agent/config.yaml
 │   └── fs/
-│       ├── init.go           # Инициализация проекта
-│       └── assets/           # Embedded assets для init/init-php
-│           ├── examples/
-│           ├── go/prompts/
-│           ├── php/prompts/
-│           └── shared/
-│               ├── prompts/      # entrypoint + core + task modes
-│               └── prompt_specs/ # Машинно-читабельные prompt.yaml
+│       └── init.go           # Инициализация проекта
 ├── assets/
-│   └── examples/             # Публичные примеры спецификаций
+│   ├── examples/             # Примеры спецификаций
+│   ├── go/prompts/           # Go-профиль: base + zenflow
+│   └── php/prompts/          # PHP-профиль: base + zenflow
 ├── go.mod
 ├── go.sum
 └── README.md
@@ -227,61 +215,25 @@ spec-agent/
 
 ## Формат спецификаций
 
-Актуальный формат спецификаций определяется файлом:
-- `./.spec_agent/prompts/base/spec_rules.md` (после `spec-agent init`)
+Спецификации — это Markdown-файлы со следующей структурой:
 
-Ключевые требования:
-- У каждого исходника должен быть colocated spec-файл с тем же именем (`foo.go` + `foo.md`).
-- В начале спеки обязателен marker-блок `SPEC:*`.
-- Обязательные секции в строгом порядке:
-  1. `# Title`
-  2. `## Responsibility`
-  3. `## Inputs`
-  4. `## Outputs`
-  5. `## Business Logic`
-  6. `## Flow`
-  7. `## Links`
-  8. `## Dependencies`
-  9. `## Errors`
-  10. `## Notes` (опционально)
-- `## Links` содержит только явные связи формата:
-  - `- <relation>: [Name](../path/spec.md#anchor)`
-- Текст спецификаций должен быть на русском.
-
-Канонический skeleton:
 ```markdown
-<!-- SPEC:START -->
-<!-- SPEC:FILE=true -->
-<!-- SPEC:ID=path/to/file_without_ext -->
-<!-- SPEC:KIND=controller|command|usecase|service|repository|other -->
-<!-- SPEC:MENU=true|false -->
-<!-- SPEC:END -->
+# Название компонента
 
-# <Название>
+## Контекст
+Описание задачи, роли в системе, исторический контекст.
 
-## Responsibility
-...
+## Ответственность
+Что этот компонент отвечает за реализацию.
 
-## Inputs
-...
+## Контракты
+Интерфейсы, структуры данных, API.
 
-## Outputs
-...
+## Ограничения
+Constraint'ы, assumptions, limitations.
 
-## Business Logic
-1. ...
-
-## Flow
-1. ...
-
-## Links
-- uses: [Name](../path/spec.md#anchor)
-
-## Dependencies
-- [Name](../path/spec.md)
-
-## Errors
-- ...
+## Зависимости
+- Ссылка на другую спецификацию: [Component Name](../other/spec.md)
 ```
 
 ## Конфигурация
@@ -302,13 +254,6 @@ exclude:
 ### Пример спецификации usecase
 
 ```markdown
-<!-- SPEC:START -->
-<!-- SPEC:FILE=true -->
-<!-- SPEC:ID=usecases/create_user -->
-<!-- SPEC:KIND=usecase -->
-<!-- SPEC:MENU=false -->
-<!-- SPEC:END -->
-
 # CreateUserUseCase
 
 ## Responsibility
@@ -322,23 +267,17 @@ exclude:
 ## Outputs
 - Созданный объект User с ID
 
-## Business Logic
+## Business Rules
 1. Email должен быть уникальным
 2. Пароль должен быть минимум 8 символов
 3. Новый пользователь создается в неактивном состоянии
 
 ## Flow
 1. Валидирует входные данные
-2. Проверяет уникальность email.
-3. Хеширует пароль.
-4. Создает запись пользователя.
-5. Отправляет письмо подтверждения.
-
-## Links
-- calls: [UserRepository](../repositories/user_repository.md#get_by_email)
-- calls: [CryptoService](../services/crypto_service.md#hash)
-- writes: [UserRepository](../repositories/user_repository.md#create)
-- calls: [EmailService](../services/email_service.md#send_confirmation)
+2. Проверяет уникальность email → calls: [UserRepository](../repositories/user_repository.md)
+3. Хеширует пароль → calls: [CryptoService](../services/crypto_service.md)
+4. Создает запись в БД → writes: [UserRepository](../repositories/user_repository.md)
+5. Отправляет письмо подтверждения → calls: [EmailService](../services/email_service.md)
 
 ## Dependencies
 - [UserRepository](../repositories/user_repository.md)
@@ -351,6 +290,33 @@ exclude:
 - ErrWeakPassword — слабый пароль
 ```
 
+### Пример спецификации сервиса
+
+```markdown
+# UserRepository
+
+## Responsibility
+Управляет доступом к данным пользователей в базе данных.
+
+## Inputs
+- User object for create/update
+- User ID for read/delete
+- Filter parameters for list
+
+## Outputs
+- User object(s) or error
+
+## Dependencies
+- [Database Driver](../db/connection.md)
+
+## Contract
+- Create(ctx, user) → (userWithID, error)
+- GetByID(ctx, id) → (user, error)
+- GetByEmail(ctx, email) → (user, error)
+- Update(ctx, user) → error
+- Delete(ctx, id) → error
+```
+
 ## Разработка
 
 ### Сборка локально
@@ -360,60 +326,11 @@ go build -o spec-agent ./cmd/spec-agent
 ./spec-agent --help
 ```
 
-Сборка с встраиванием версии:
-
-```bash
-go build -ldflags "-X main.version=v2.0.3" -o spec-agent ./cmd/spec-agent
-./spec-agent version
-```
-
 ### Тестирование
 
 ```bash
 go test ./...
 ```
-
-### Генерация prompt-маркировки
-
-Исходники промптов хранятся в `internal/fs/assets/shared/prompt_specs/**/prompt.yaml`.
-Сгенерировать markdown:
-
-```bash
-go run ./cmd/promptgen
-```
-
-Проверить, что markdown актуален:
-
-```bash
-go run ./cmd/promptgen -check
-```
-
-### Eval-набор (MVP)
-
-В репозитории добавлен базовый eval-контур для проверки качества промптов:
-- задачи: `eval/tasks/*`
-- фикстуры: `eval/fixtures/*`
-- пороги качества: `eval/baselines/thresholds.yaml`
-- раннер: `cmd/eval-runner`
-
-Локальный запуск:
-
-```bash
-bash eval/scripts/fetch_draft_fixture.sh
-go run ./cmd/eval-runner                 # все задачи
-go run ./cmd/eval-runner -tasks bootstrap,bugfix,development
-```
-
-Считаемые метрики:
-- `completeness`
-- `scope_violations`
-- `test_pass_rate`
-- `spec_rule_violations`
-
-CI workflow:
-- `.github/workflows/eval.yml` (быстрый прогон на PR/push по paths-фильтрам, полный по schedule/manual)
-- JSON-результаты сохраняются в `eval/results/*.json` и загружаются как artifacts
-- в GitHub eval выполняется в одноразовом контейнере (`golang:1.24`), после завершения контейнер удаляется
 
 ### Структура команд
 

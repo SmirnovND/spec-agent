@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/SmirnovND/spec-agent/v2/internal/fs"
+	"github.com/SmirnovND/spec-agent/v3/internal/fs"
 	"github.com/spf13/cobra"
 )
 
@@ -23,8 +23,7 @@ var initCmd = &cobra.Command{
   - prompts/zenflow/ — добавляются при --zenflow
 - spec_changes/ — директория для планов изменений
 
-Все ресурсы встраиваются в бинарь и автоматически распаковываются.
-Примечание: повторный запуск не перезаписывает существующие файлы; добавляются только отсутствующие.`,
+Все ресурсы встраиваются в бинарь и автоматически распаковываются.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		zenflow, _ := cmd.Flags().GetBool("zenflow")
 		if err := fs.InitSpecAgent(zenflow); err != nil {

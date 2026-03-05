@@ -1,4 +1,0 @@
-completeness_min: 0.90
-test_pass_rate_min: 0.95
-scope_violations_max: 0
-spec_rule_violations_max: 0

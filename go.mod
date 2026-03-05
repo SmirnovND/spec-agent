@@ -1,4 +1,4 @@
-module github.com/SmirnovND/spec-agent/v2
+module github.com/SmirnovND/spec-agent/v3
 
 go 1.24.1
 

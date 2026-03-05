@@ -4,8 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Version = "dev"
-
 var rootCmd = &cobra.Command{
 	Use:   "spec-agent",
 	Short: "CLI для работы со spec-driven архитектурой",
