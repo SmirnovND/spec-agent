@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.0.3 - 2026-03-05
+
+### Features
+
+- Added `spec-agent version` command to print current CLI version.
+- Added build-time version injection support via `-ldflags "-X main.version=..."`.
+
+### Documentation
+
+- Updated installation verification to use `spec-agent version`.
+- Added example of versioned build command in README.
+
 ## v2.0.2 - 2026-03-05
 
 ### Fixes

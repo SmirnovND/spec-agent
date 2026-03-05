@@ -20,7 +20,7 @@ go install github.com/SmirnovND/spec-agent/v2/cmd/spec-agent@latest
 
 Проверка установки:
 ```bash
-spec-agent --help
+spec-agent version
 ```
 
 ## Быстрый старт
@@ -358,6 +358,13 @@ exclude:
 ```bash
 go build -o spec-agent ./cmd/spec-agent
 ./spec-agent --help
+```
+
+Сборка с встраиванием версии:
+
+```bash
+go build -ldflags "-X main.version=v2.0.3" -o spec-agent ./cmd/spec-agent
+./spec-agent version
 ```
 
 ### Тестирование
